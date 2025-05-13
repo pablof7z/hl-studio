@@ -1,0 +1,256 @@
+# Project File Inventory
+
+## Libraries used
+- @nostr-dev-kit/ndk
+- ndk-hooks
+- Zustand/Jotai (for stores)
+- Next.js
+- TypeScript
+- Prettier
+- typescript-eslint
+- Bun
+
+---
+
+## Directory Structure
+
+### src/
+- actions/
+    - post-actions.ts
+    - recommendation-actions.ts
+- app/
+    - globals.css
+    - layout.tsx
+    - dashboard/
+        - layout.tsx
+        - page.tsx
+        - posts/
+            - page.tsx
+            - (editor)/
+                - layout.tsx
+                - editor/page.tsx
+                - new-thread/page.tsx
+            - editor/page.tsx
+            - import-export/page.tsx
+            - new/page.tsx
+            - new-thread/page.tsx
+        - recommendations/
+            - page.tsx
+        - schedule/
+            - page.tsx
+        - settings/
+            - layout.tsx
+            - page.tsx
+            - payments/page.tsx
+            - publication/page.tsx
+        - subscribers/
+            - page.tsx
+    - editor/
+        - layout.tsx
+        - post/page.tsx
+        - thread/page.tsx
+- components/
+    - theme-provider.tsx
+    - account/
+        - account-switcher.tsx
+    - dashboard/
+        - dashboard-header.tsx
+        - dashboard-shell.tsx
+        - dashboard-stats.tsx
+        - recent-posts.tsx
+        - subscriber-growth.tsx
+        - top-performers.tsx
+        - upcoming-schedule.tsx
+    - editor/
+        - editor-toolbar.tsx
+        - mention-list.tsx
+        - tiptap-editor.tsx
+    - layout/
+        - account-switcher.tsx
+        - header.tsx
+        - navigation.tsx
+        - sidebar.tsx
+    - posts/
+        - post-editor.tsx
+        - post-schedule-dialog.tsx
+        - post-status-badge.tsx
+        - post-type-dropdown.tsx
+        - post-type-selector.tsx
+        - posts-filter.tsx
+        - posts-table.tsx
+        - schedule-indicator.tsx
+        - import-export/
+            - export-posts-table.tsx
+            - export-posts.tsx
+            - import-export-tabs.tsx
+            - import-posts.tsx
+            - import-preview.tsx
+        - thread-editor/
+            - thread-editor.tsx
+            - thread-post.tsx
+            - thread-sidebar.tsx
+            - thread-tips.tsx
+            - thread-toolbar.tsx
+    - recommendations/
+        - add-recommendation-dialog.tsx
+        - outgoing-recommendations.tsx
+        - recommendations-content.tsx
+        - suggested-recommendations.tsx
+    - schedule/
+        - calendar-controls.tsx
+        - calendar-day-view.tsx
+        - calendar-month-view.tsx
+        - calendar-post-item.tsx
+        - calendar-week-view.tsx
+        - post-details-dialog.tsx
+        - schedule-calendar.tsx
+    - settings/
+        - image-upload.tsx
+        - payments-form.tsx
+        - publication-form.tsx
+        - settings-sidebar.tsx
+    - subscribers/
+        - add-subscribers.tsx
+        - import-subscribers.tsx
+        - subscribers-content.tsx
+        - subscribers-list.tsx
+    - ui/
+        - accordion.tsx
+        - alert-dialog.tsx
+        - alert.tsx
+        - aspect-ratio.tsx
+        - avatar.tsx
+        - badge.tsx
+        - breadcrumb.tsx
+        - button.tsx
+        - calendar.tsx
+        - card.tsx
+        - carousel.tsx
+        - chart.tsx
+        - checkbox.tsx
+        - collapsible.tsx
+        - command.tsx
+        - context-menu.tsx
+        - dialog.tsx
+        - drawer.tsx
+        - dropdown-menu.tsx
+        - form.tsx
+        - hover-card.tsx
+        - input-otp.tsx
+        - input.tsx
+        - label.tsx
+        - menubar.tsx
+        - navigation-menu.tsx
+        - pagination.tsx
+        - popover.tsx
+        - progress.tsx
+        - radio-group.tsx
+        - resizable.tsx
+        - scroll-area.tsx
+        - select.tsx
+        - separator.tsx
+        - sheet.tsx
+        - sidebar.tsx
+        - skeleton.tsx
+        - slider.tsx
+        - sonner.tsx
+        - switch.tsx
+        - table.tsx
+        - tabs.tsx
+        - textarea.tsx
+        - toast.tsx
+        - toaster.tsx
+        - toggle-group.tsx
+        - toggle.tsx
+        - tooltip.tsx
+        - use-mobile.tsx
+        - use-toast.ts
+- data/
+    - mock-recommendations.ts
+    - mock-scheduled-posts.ts
+    - mock-subscribers.ts
+    - mock-users.ts
+- domains/
+    - articles/
+        - index.ts
+        - types.ts
+        - hooks/
+            - useArticles.ts
+        - stores/
+            - articlesStore.ts
+    - auth/
+        - index.ts
+        - types.ts
+        - hooks/
+            - useAuthStatus.ts
+            - useBunkerLogin.ts
+            - useNip07Login.ts
+            - useNostrConnectLogin.ts
+            - useNsecLogin.ts
+- features/
+    - dashboard/
+        - index.ts
+        - components/
+            - Header.tsx
+            - SubscriberGrowthChart.tsx
+            - Stats/
+                - StatCard.tsx
+                - StatsGrid.tsx
+        - hooks/
+            - useDashboardData.ts
+        - stores/
+            - dashboardStore.ts
+    - feed/
+        - index.ts
+        - components/
+            - ArticleCard.tsx
+            - ArticleFeed.tsx
+        - hooks/
+            - useFeedFilters.ts
+        - stores/
+            - feedUiStore.ts
+    - login/
+        - index.ts
+        - components/
+            - AuthError.tsx
+            - BunkerForm.tsx
+            - LoginScreen.tsx
+            - Nip07Button.tsx
+            - NostrConnectForm.tsx
+            - NsecForm.tsx
+        - hooks/
+            - useLoginUi.ts
+        - stores/
+            - loginUiStore.ts
+- hooks/
+    - use-mobile.tsx
+    - use-toast.ts
+- lib/
+    - utils.ts
+- ndk/
+    - config.ts
+    - index.ts
+    - types.ts
+- styles/
+    - globals.css
+- ui/
+    - index.ts
+    - atoms/
+        - Avatar.tsx
+        - Button.tsx
+        - NostrAvatar.tsx
+    - molecules/
+        - DataTable.tsx
+    - organisms/
+        - Sidebar.tsx
+
+---
+
+## Notes
+
+- All code follows the offline-first principle (no loading flags).
+- Components are organized by domain and feature, with a clear separation of concerns.
+- Barrel exports are present in `src/domains/articles/index.ts`, `src/domains/auth/index.ts`, `src/features/dashboard/index.ts`, `src/features/feed/index.ts`, `src/features/login/index.ts`, and `src/ui/index.ts`.
+- NDK is instantiated as a singleton in `src/ndk/index.ts` and booted in `src/app/layout.tsx`.
+- All hooks use the `useCamel` naming convention, and components use PascalCase.
+- All files use 4-space indentation and strict TypeScript.
