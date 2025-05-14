@@ -84,10 +84,7 @@ export function Navigation() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <PostTypeDropdown variant="outline" size="sm" buttonText="Create" showIcon={false} />
-          <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
-            {isDarkMode ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
-          </Button>
+          <PostTypeDropdown variant="default" size="sm" buttonText="Create" showIcon={false} />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -97,6 +94,18 @@ export function Navigation() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={toggleDarkMode}>
+                <div className="flex items-center gap-2">
+                {isDarkMode ? (<>
+                  <Sun className="h-[1.2rem] w-[1.2rem]" />
+                  <span>Light Mode</span>
+                </>) : (<>
+                  <Moon className="h-[1.2rem] w-[1.2rem]" />
+                  <span>Dark Mode</span>
+                </>)}
+                </div>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>

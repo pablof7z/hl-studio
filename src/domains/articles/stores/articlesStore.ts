@@ -35,7 +35,7 @@ export const useArticlesStore = create<ArticlesStoreState>((set) => ({
         });
 
         ndk.subscribe([
-            { kinds: [NDKKind.Draft], "#k": [NDKKind.Article.toString()], authors: [pubkey] },
+            { kinds: [NDKKind.Draft+10], "#k": [NDKKind.Article.toString()], authors: [pubkey] },
         ], {}, {
             onEvents: async (events) => {
                 const decryptedEvents: NDKArticle[] = [];
@@ -44,10 +44,7 @@ export const useArticlesStore = create<ArticlesStoreState>((set) => ({
                     const draft = NDKDraft.from(event);
                     const draftEvent = await draft.getEvent();
                     console.log("Draft event:", draft.inspect);
-                    if (!draftEvent) {
-                        console.error("Failed to get event from draft:", draft);
-                    } else {
-                        console.log("Decrypted event:", draftEvent.inspect);
+                    if (draftEvent) {
                         decryptedEvents.push(NDKArticle.from(draftEvent));
                     }
                 }
@@ -59,10 +56,7 @@ export const useArticlesStore = create<ArticlesStoreState>((set) => ({
             onEvent: async (event) => {
                 const draft = NDKDraft.from(event);
                 const draftEvent = await draft.getEvent();
-                if (!draftEvent) {
-                    console.error("Failed to get event from draft:", draft);
-                } else {
-                    console.log("Decrypted event:", draftEvent.inspect);
+                if (draftEvent) {
                     set((state) => ({
                         drafts: [...state.drafts, NDKArticle.from(draftEvent)],
                     }));

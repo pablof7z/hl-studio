@@ -26,6 +26,6 @@ export function NDKHeadless() {
             articleStoreInit(ndk, currentPubkey);
         }
     }, [currentPubkey, ndk]);
-    
+
     return null;
 }

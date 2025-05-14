@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useEffect } from "react"
 import { CaretSortIcon, CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons"
 
 import { cn } from "@/lib/utils"
@@ -26,6 +27,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { usePinnedGroupsStore } from "@/domains/groups/stores/pinned-groups"
+import { useNDK, useNDKCurrentPubkey, useProfileValue } from "@nostr-dev-kit/ndk-hooks"
+import { list } from "postcss"
+import { useMyGroups } from "@/domains/groups/hooks/use-my-groups"
+import { NostrAvatar } from "@/ui"
 
 type Account = {
   label: string
@@ -76,6 +82,17 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
   const [open, setOpen] = React.useState(false)
   const [showNewAccountDialog, setShowNewAccountDialog] = React.useState(false)
   const [selectedAccount, setSelectedAccount] = React.useState<Account>(accounts[1])
+  const currentPubkey = useNDKCurrentPubkey();
+  const listPinnedGroups = usePinnedGroupsStore((state) => state.listPinnedGroups);
+  const myGroups = useMyGroups();
+  const { ndk } = useNDK();
+  const userProfile = useProfileValue(currentPubkey);
+
+  useEffect(() => {
+    if (!currentPubkey || !ndk) return;
+
+    listPinnedGroups(ndk, [currentPubkey]);
+  }, [currentPubkey])
 
   return (
     <Dialog open={showNewAccountDialog} onOpenChange={setShowNewAccountDialog}>
@@ -100,24 +117,69 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
             <CommandList>
               <CommandInput placeholder="Search accounts..." />
               <CommandEmpty>No accounts found.</CommandEmpty>
-              <CommandGroup heading="Accounts">
-                {accounts.map((account) => (
-                  <CommandItem
-                    key={account.value}
+
+              <CommandGroup heading="Account" className="overflow-auto">
+              <CommandItem
+                    key={currentPubkey}
                     onSelect={() => {
-                      setSelectedAccount(account)
+                      setSelectedAccount({
+                        label: currentPubkey,
+                        value: currentPubkey,
+                        icon: (
+                          <NostrAvatar pubkey={currentPubkey} size={32} className="h-6 w-6" alt="User" />
+                        ),
+                      })
                       setOpen(false)
                     }}
                     className="text-sm"
                   >
                     <div className="flex items-center gap-2">
-                      {account.icon}
-                      <span>{account.label}</span>
+                      <NostrAvatar pubkey={currentPubkey} size={32} className="h-6 w-6" alt="User" />
+                      <span>
+                        {userProfile?.displayName ?? currentPubkey}
+                      </span>
                     </div>
                     <CheckIcon
                       className={cn(
                         "ml-auto h-4 w-4",
-                        selectedAccount.value === account.value ? "opacity-100" : "opacity-0",
+                        selectedAccount.value === currentPubkey ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                  </CommandItem>
+              </CommandGroup>
+
+              <CommandGroup heading="Publications" className="overflow-auto">
+                {myGroups.map((group) => (
+                  <CommandItem
+                    key={group.groupId}
+                    onSelect={() => {
+                      setSelectedAccount({
+                        label: group.metadata?.name ?? group.groupId,
+                        value: group.metadata?.name ?? group.groupId,
+                        icon: (
+                          <Avatar className="h-6 w-6">
+        <AvatarImage src="/letter-a-abstract.png" alt="Acme Inc" />
+        <AvatarFallback>AI</AvatarFallback>
+      </Avatar>
+                        ),
+                      })
+                      setOpen(false)
+                    }}
+                    className="text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={group.metadata?.picture ?? '/letter-a-abstract.png'} alt="Acme Inc" />
+                        <AvatarFallback>AI</AvatarFallback>
+                    </Avatar>
+                      <span>
+                        {group.metadata?.name ?? group.groupId}
+                      </span>
+                    </div>
+                    <CheckIcon
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        selectedAccount.value === group.groupId ? "opacity-100" : "opacity-0",
                       )}
                     />
                   </CommandItem>
@@ -134,7 +196,7 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
                   }}
                 >
                   <PlusCircledIcon className="mr-2 h-5 w-5" />
-                  Create Account
+                  Create Publication
                 </CommandItem>
               </CommandGroup>
             </CommandList>
@@ -143,8 +205,7 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
       </Popover>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create account</DialogTitle>
-          <DialogDescription>Add a new account to manage publications.</DialogDescription>
+          <DialogTitle>Create Publication</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
