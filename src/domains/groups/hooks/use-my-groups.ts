@@ -21,7 +21,6 @@ export function useMyGroups() {
             }
         }
 
-        console.log('Groups to fetch:', groupsToFetch);
         if (groupsToFetch.length > 0) {
             // Fetch the groups from the relays
             fetchGroups(ndk, groupsToFetch, {
@@ -33,21 +32,13 @@ export function useMyGroups() {
         }
     }, [myPinnedGroups?.length, groups]);
 
-    console.log('current groups:', groups);
-
     return useMemo(() => {
         if (!currentPubkey || !myPinnedGroups) return [];
-        console.log('My pinned groups:', Object.keys(groups));
         const ret = [];
-        console.log('typeof myPinnedGroups:', typeof myPinnedGroups);
         myPinnedGroups.forEach((entry, index) => {
-            console.log('\tGroup:', entry.groupId, index);
             if (groups[entry.groupId]) ret.push(groups[entry.groupId]);
-            else console.log('\tGroup not found:', entry.groupId);
         });
 
-        console.log('My groups ret:', ret);
-        
         return ret;
     }, [myPinnedGroups, groups]);
 }

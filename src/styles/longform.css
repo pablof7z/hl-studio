@@ -1,0 +1,171 @@
+/* Import Spectral font */
+@import '@fontsource/spectral/300.css';
+@import '@fontsource/spectral/400.css';
+@import '@fontsource/spectral/500.css';
+@import '@fontsource/spectral/600.css';
+@import '@fontsource/spectral/700.css';
+
+/* Longform content styles inspired by Substack */
+.longform-content {
+    font-family: 'Spectral', Georgia, serif;
+    color: #292929;
+    line-height: 1.6;
+    letter-spacing: -0.003em;
+    font-weight: 400;
+    font-size: 20px;
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.longform-content .embed-event {
+    font-family: sans-serif !important;
+    font-size: 16px;
+}
+
+.longform-content .embed-event img {
+    margin: 0px;
+}
+
+.longform-content .embed-event h3 {
+    font-family: sans-serif !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+}
+
+/* Headings */
+.longform-content h1, h2, h3 {
+    font-family: 'Inter', sans-serif;
+}
+
+.longform-content h1 {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 24px;
+}
+
+.longform-content h2 {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    letter-spacing: -0.012em;
+}
+
+.longform-content h1 + h2 {
+    margin-top: -20px;
+}
+
+.longform-content h3 {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 12px;
+}
+
+/* Paragraphs */
+.longform-content p {
+    margin-bottom: 0.5rem;
+}
+
+/* Links */
+.longform-content a {
+    color: #1a73e8;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+.longform-content a:hover {
+    text-decoration-thickness: 2px;
+}
+
+/* Blockquotes */
+.longform-content blockquote {
+    border-left: 3px solid #292929;
+    padding-left: 20px;
+    margin-left: 0;
+    margin-right: 0;
+    font-style: italic;
+    color: #555;
+}
+
+/* Lists */
+.longform-content ul,
+.longform-content ol {
+    margin-bottom: 28px;
+    padding-left: 24px;
+}
+
+.longform-content li {
+    margin-bottom: 10px;
+}
+
+.longform-content li p {
+    margin-bottom: 0px;
+}
+
+/* Images */
+.longform-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 32px auto;
+    display: block;
+}
+
+/* Code blocks */
+.longform-content pre {
+    background-color: #f6f8fa;
+    border-radius: 4px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: monospace;
+    font-size: 16px;
+    margin: 24px 0;
+}
+
+.longform-content code {
+    background-color: #f6f8fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+/* Horizontal rule */
+.longform-content hr {
+    border: none;
+    height: 1px;
+    background-color: #e6e6e6;
+    margin: 40px 0;
+}
+
+/* First paragraph after heading */
+.longform-content h1 + p,
+.longform-content h2 + p,
+.longform-content h3 + p {
+    margin-top: 0;
+}
+
+/* Editor-specific styles */
+.longform-editor {
+}
+
+/* Placeholder text */
+.longform-editor .is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: #adb5bd;
+    pointer-events: none;
+    height: 0;
+}
+
+/* Mention styling */
+.longform-editor .mention {
+    color: #1a73e8;
+    font-weight: 500;
+    text-decoration: none;
+    background-color: rgba(26, 115, 232, 0.08);
+    border-radius: 4px;
+    padding: 2px 4px;
+}

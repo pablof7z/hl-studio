@@ -11,6 +11,7 @@ export function useNsecLogin() {
 
     return useCallback(
         (nsec: string) => {
+            console.log("[useNsecLogin] nsec:", nsec);
             const signer = new NDKPrivateKeySigner(nsec);
             login(signer);
         },

@@ -15,22 +15,26 @@ import {
   ChevronDown,
   Undo,
   Redo,
+  AtSign,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface EditorToolbarProps {
-  editor: Editor
+  editor: Editor,
+  className?: string,
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, className }: EditorToolbarProps) {
   if (!editor) {
     return null
   }
 
   return (
     <div className="border-b sticky top-0 bg-background z-10">
-      <div className="flex items-center gap-1 p-1 overflow-x-auto">
+      <div className={cn("flex items-center gap-1 p-1 overflow-x-auto", className)}>
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -171,13 +175,26 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
           <ImageIcon className="h-4 w-4" />
         </Button>
 
-        <Button variant="ghost" size="icon">
-          <Headphones className="h-4 w-4" />
-        </Button>
-
-        <Button variant="ghost" size="icon">
-          <MessageSquare className="h-4 w-4" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  // Set cursor position at current selection
+                  editor.commands.focus();
+                }}
+                aria-label="Mention user or reference event"
+              >
+                <AtSign className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Mention user or reference event</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <div className="h-6 w-px bg-border mx-1" />
 
@@ -203,20 +220,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-1">
-              Button
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>Primary Button</DropdownMenuItem>
-            <DropdownMenuItem>Secondary Button</DropdownMenuItem>
-            <DropdownMenuItem>Text Button</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-1">
               More
               <ChevronDown className="h-4 w-4" />
             </Button>
@@ -228,10 +231,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             <DropdownMenuItem>Code Block</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <Button variant="ghost" size="sm" className="ml-auto">
-          Edit email header / footer
-        </Button>
       </div>
     </div>
   )

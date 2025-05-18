@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { injectTestPrivKey, TEST_PRIVKEY } from './utils/ndk-auth';
 
 // Helper function to log page content for debugging
-async function logPageState(page, label) {
+async function logPageState(page: Page, label: string) {
     console.log(`\n----- ${label} -----`);
     
     // Log all buttons on the page
@@ -10,12 +10,33 @@ async function logPageState(page, label) {
     console.log(`Found ${buttons.length} buttons:`);
     for (let i = 0; i < buttons.length; i++) {
         const buttonText = await buttons[i].textContent();
-        console.log(`  Button ${i+1}: "${buttonText}"`);
+        const buttonVisible = await buttons[i].isVisible();
+        console.log(`  Button ${i+1}: "${buttonText}" (Visible: ${buttonVisible})`);
     }
     
     // Log if form exists
     const formCount = await page.locator('form').count();
     console.log(`Found ${formCount} forms`);
+
+    // Log input elements
+    const inputs = await page.locator('input').all();
+    console.log(`Found ${inputs.length} input elements:`);
+    for (let i = 0; i < inputs.length; i++) {
+        const inputType = await inputs[i].getAttribute('type');
+        const inputName = await inputs[i].getAttribute('name');
+        const inputPlaceholder = await inputs[i].getAttribute('placeholder');
+        const inputId = await inputs[i].getAttribute('id');
+        let associatedLabelText = 'N/A';
+        if (inputId) {
+            const labelElement = await page.locator(`label[for="${inputId}"]`).first();
+            if (await labelElement.count() > 0) {
+                associatedLabelText = (await labelElement.textContent()) || 'Empty Label';
+            }
+        }
+        const inputValue = await inputs[i].inputValue();
+        const isVisible = await inputs[i].isVisible();
+        console.log(`  Input ${i+1}: type="${inputType}", name="${inputName}", id="${inputId}", placeholder="${inputPlaceholder}", label="${associatedLabelText}", value="${inputValue}", visible=${isVisible}`);
+    }
     
     // Log headings and important text for context
     const headings = await page.locator('h1, h2, h3').allTextContents();
@@ -67,7 +88,11 @@ test.describe('Login Flow', () => {
             formFound = true;
             console.log('Form found');
         } catch (e) {
-            console.log('No form found, looking for other elements:', e.message);
+            if (e instanceof Error) {
+                console.log('No form found, looking for other elements:', e.message);
+            } else {
+                console.log('No form found, looking for other elements: An unknown error occurred');
+            }
             
             // Check if we landed directly on an input screen
             const inputCount = await page.locator('input').count();
@@ -76,16 +101,19 @@ test.describe('Login Flow', () => {
             }
         }
         
-        // If a private key input appears, fill it
-        console.log('Checking for private key input field...');
-        const privkeyInput = page.getByLabel(/private key/i);
+        // Wait for the nsec input field to be visible and then fill it
+        console.log('Waiting for nsec input field (placeholder "Enter your nsec...")...');
+        const nsecInput = page.getByPlaceholder('Enter your nsec...');
         
-        if (await privkeyInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-            console.log('Private key input found, filling it');
-            await privkeyInput.fill(TEST_PRIVKEY);
-            console.log('Filled private key input');
-        } else {
-            console.log('No private key input found or not visible');
+        try {
+            await expect(nsecInput).toBeVisible({ timeout: 15000 }); // Increased timeout
+            console.log('Nsec input found and visible, filling it');
+            await nsecInput.fill(TEST_PRIVKEY);
+            console.log('Filled nsec input');
+        } catch (error) {
+            console.error('Failed to find or fill nsec input:', error);
+            await logPageState(page, 'STATE WHEN NSEC INPUT FAILED');
+            throw error; // Re-throw to fail the test clearly
         }
         
         // Log page state after potentially filling the private key
@@ -94,32 +122,37 @@ test.describe('Login Flow', () => {
         // Try multiple strategies to submit the form
         console.log('Attempting to submit login form...');
         
-        // Strategy 1: Look for type="submit" button in a form
+        // Strategy 1: Look for type="submit" button in a form that is visible
         const submitBtn = page.locator('form button[type="submit"]');
-        if (await submitBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-            console.log('Found submit button with type="submit", clicking it');
-            await submitBtn.click();
-        } 
-        // Strategy 2: Look for any button inside a form
+        if (await submitBtn.count() > 0 && await submitBtn.first().isVisible({timeout: 2000})) {
+            console.log('Found visible submit button with type="submit", clicking it');
+            await submitBtn.first().click();
+        }
+        // Strategy 2: Look for any visible button inside a form
         else if (formFound) {
-            console.log('Looking for any button in the form');
+            console.log('Looking for any visible button in the form');
             const formButton = page.locator('form button');
             if (await formButton.count() > 0) {
-                console.log(`Found ${await formButton.count()} buttons in form, clicking first one`);
-                await formButton.first().click();
+                const visibleFormButtons = formButton.filter({ has: page.locator(':scope:visible')});
+                if (await visibleFormButtons.count() > 0) {
+                    console.log(`Found ${await visibleFormButtons.count()} visible buttons in form, clicking first one`);
+                    await visibleFormButtons.first().click();
+                } else {
+                     console.log('No visible buttons found in form, though form exists.');
+                }
             } else {
                 console.log('No buttons found in form');
             }
-        } 
-        // Strategy 3: Check for login button with nsec text
+        }
+        // Strategy 3: Check for login button with nsec text or general "Log in"
         else {
-            console.log('Trying to find any login-related button');
-            const loginButton = page.locator('button:has-text("Login with nsec"), button:has-text("Log in")');
+            console.log('Trying to find any login-related button (e.g., "Login with nsec", "Log in")');
+            const loginButton = page.locator('button:has-text(/Login with nsec/i), button:has-text(/^Log in$/i)').filter({ has: page.locator(':scope:visible')});
             if (await loginButton.count() > 0) {
-                console.log('Found login button, clicking it');
+                console.log(`Found ${await loginButton.count()} visible login-related buttons, clicking first one: "${await loginButton.first().textContent()}"`);
                 await loginButton.first().click();
             } else {
-                console.log('No login button found');
+                console.log('No suitable visible login button found by text match.');
             }
         }
         

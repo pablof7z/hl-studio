@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link";
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -241,9 +243,11 @@ export function PostsTable() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                      <DropdownMenuItem asChild>
+                        <Link href={{ pathname: "/editor/post", query: { id: post.encode() } }}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </Link>
                       </DropdownMenuItem>
                       {post.status === "published" && (
                         <DropdownMenuItem>

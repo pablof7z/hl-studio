@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLoginUi } from "../hooks/useLoginUi";
 import { AuthMethod } from "@/domains/auth";
 import { Nip07Button } from "./Nip07Button";
@@ -6,7 +6,7 @@ import { NsecForm } from "./NsecForm";
 import { BunkerForm } from "./BunkerForm";
 import { NostrConnectForm } from "./NostrConnectForm";
 import { AuthError } from "./AuthError";
-import { Button } from "@/ui/atoms/Button";
+import { Button } from "@/components/ui/button";
 
 export function LoginScreen() {
     const { activeMethod, setActiveMethod, error, setError } = useLoginUi();
@@ -18,21 +18,21 @@ export function LoginScreen() {
                 <div className="flex flex-col gap-3">
                     <Nip07Button active={activeMethod === AuthMethod.Nip07} />
                     <Button
-                        variant={activeMethod === AuthMethod.Nsec ? "primary" : "secondary"}
+                        variant={activeMethod === AuthMethod.Nsec ? "default" : "secondary"}
                         className={`w-full transition-all ${activeMethod === AuthMethod.Nsec ? "ring-2 ring-blue-400" : ""}`}
                         onClick={() => setActiveMethod(AuthMethod.Nsec)}
                     >
                         Login with nsec
                     </Button>
                     <Button
-                        variant={activeMethod === AuthMethod.Bunker ? "primary" : "secondary"}
+                        variant={activeMethod === AuthMethod.Bunker ? "default" : "secondary"}
                         className={`w-full transition-all ${activeMethod === AuthMethod.Bunker ? "ring-2 ring-blue-400" : ""}`}
                         onClick={() => setActiveMethod(AuthMethod.Bunker)}
                     >
                         Login with Bunker
                     </Button>
                     <Button
-                        variant={activeMethod === AuthMethod.NostrConnect ? "primary" : "secondary"}
+                        variant={activeMethod === AuthMethod.NostrConnect ? "default" : "secondary"}
                         className={`w-full transition-all ${activeMethod === AuthMethod.NostrConnect ? "ring-2 ring-blue-400" : ""}`}
                         onClick={() => setActiveMethod(AuthMethod.NostrConnect)}
                     >

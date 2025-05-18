@@ -4,7 +4,7 @@
 
 * **Zero centralisation.** Identity & data live in NDK hooks — no custom auth context.
 * **Offline‑first.** Never store `loading` flags. Render what exists; let subscriptions hydrate.
-* **NDK singleton.** One instance, boot in `src/ndk/`, accessed via `useNDK()`.
+* **NDK singleton.** One instance, boot in `src/ndk/`, accessed via `const { ndk } = useNDK()`.
 
 ---
 
@@ -31,6 +31,8 @@ src/domains/<entity>/
 
 ### 1.2 Feature skeleton
 
+Only pull stores when strictly necessary, don't overengineer solutions, only pull state into stores when strictly necessary and clearly more convenient, otherwise just use local `useState` inside of components.
+
 ```text
 src/features/<feature>/
 ├── components/    # UI only – dumb visuals
@@ -38,22 +40,6 @@ src/features/<feature>/
 ├── stores/        # transient UI state (filters, toggles)
 ├── index.ts       # barrel
 ```
-
-*Components never call NDK directly; they invoke domain hooks or feature hooks.*
-
-### 1.3 Import direction
-
-```
-components  → hooks(feature) → hooks(domain) → ndk
-                                 ↑
-stores  ←────────────────────────┘ (domain or feature)
-```
-
-No upward imports allowed.
-
----
-
----
 
 ## 6. Data Fetching Pattern (domain example)
 
@@ -120,11 +106,10 @@ Target size: **≤120 LOC per file**.
 | ----------------------------------- | ------------------------------------------------- |
 | React Context for auth/ndk          | ndk-hooks exposes `useNDK()`; duplication = waste |
 | Global `loading` flags              | Nostr is offline‑first; render partial data       |
-| `useEvents`, `nostr-tools`          | Outdated; always use `useSubscribe`               |
+| `useEvents`, `nostr-tools`          | Outdated; always use `useSubscribe` or `useEvent` |
 | Manual relay retry/back‑off         | Handled by NDK internals                          |
 | Awaiting `event.publish()`          | UI shouldn't block; optimistic cache              |
 | Sorting events after `useSubscribe` | Already sorted; wasted compute                    |
-
 ---
 
 When in doubt: **domain first, feature second**.

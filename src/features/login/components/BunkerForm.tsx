@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useBunkerLogin, AuthMethod } from "@/domains/auth";
 import { useLoginUi } from "../hooks/useLoginUi";
-import { Button } from "@/ui/atoms/Button";
+import { Button } from "@/components/ui/button";
 
 export function BunkerForm() {
     const [uri, setUri] = useState("");
@@ -30,7 +30,7 @@ export function BunkerForm() {
                 autoFocus
                 className="px-4 py-2 rounded border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition outline-none"
             />
-            <Button type="submit" className="w-full">
+            <Button variant={"default"} className="w-full">
                 Login with Bunker
             </Button>
         </form>

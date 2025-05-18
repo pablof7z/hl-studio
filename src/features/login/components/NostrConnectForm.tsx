@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNostrConnectLogin, AuthMethod } from "@/domains/auth";
 import { useLoginUi } from "../hooks/useLoginUi";
-import { Button } from "@/ui/atoms/Button";
+import { Button } from "@/components/ui/button";
 
 // Inline NostrConnect SVG icon
 const NostrConnectIcon = () => (
@@ -60,7 +60,7 @@ export function NostrConnectForm() {
                         {error.message}
                     </div>
                 )}
-                <Button type="submit" className="w-full mt-2">
+                <Button variant="default" className="w-full mt-2">
                     Login with NostrConnect
                 </Button>
             </form>

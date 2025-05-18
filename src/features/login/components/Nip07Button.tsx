@@ -1,7 +1,7 @@
 import React from "react";
 import { useNip07Login, AuthMethod } from "@/domains/auth";
 import { useLoginUi } from "../hooks/useLoginUi";
-import { Button } from "@/ui/atoms/Button";
+import { Button } from "@/components/ui/button";
 
 type Nip07ButtonProps = {
     active?: boolean;
@@ -25,7 +25,7 @@ export function Nip07Button({ active = false }: Nip07ButtonProps) {
 
     return (
         <Button
-            variant={active ? "primary" : "secondary"}
+            variant={active ? "default" : "secondary"}
             className={`w-full transition-all ${active ? "ring-2 ring-blue-400" : ""}`}
             onClick={handleClick}
         >

@@ -2,10 +2,23 @@ import { format } from "date-fns"
 import { Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import type { ScheduleSettings } from "./post-schedule-dialog"
+
+// Define and export the specific settings type ScheduleIndicator needs
+export interface ScheduleIndicatorSettings {
+  date: Date; // Date is required for the indicator to make sense
+  time: string;
+  timezone: string;
+  sendEmail: boolean;
+  socialShare: {
+    twitter: boolean;
+    linkedin: boolean;
+    facebook: boolean;
+  };
+  audienceType: "all" | "paid" | "free";
+}
 
 interface ScheduleIndicatorProps {
-  settings: ScheduleSettings
+  settings: ScheduleIndicatorSettings
   className?: string
 }
 

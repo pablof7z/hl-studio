@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AccountSwitcher } from "@/components/account/account-switcher";
 import { useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks";
-import { NostrAvatar } from "@/ui/atoms/NostrAvatar";
+import UserAvatar from "@/features/nostr/components/user/UserAvatar";
 
 const navigationItems = [
   { name: "Dashboard", path: "/dashboard" },
@@ -89,7 +89,7 @@ export function Navigation() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
-                <NostrAvatar pubkey={currentPubkey} size={32} className="h-8 w-8" alt="User" />
+                <UserAvatar pubkey={currentPubkey} size={"default"} className="h-8 w-8" alt="User" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

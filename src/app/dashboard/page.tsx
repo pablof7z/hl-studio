@@ -1,4 +1,5 @@
-import type { Metadata } from "next"
+'use client';
+
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
@@ -6,11 +7,6 @@ import { RecentPosts } from "@/components/dashboard/recent-posts"
 import { SubscriberGrowth } from "@/components/dashboard/subscriber-growth"
 import { TopPerformers } from "@/components/dashboard/top-performers"
 import { UpcomingSchedule } from "@/components/dashboard/upcoming-schedule"
-
-export const metadata: Metadata = {
-  title: "Dashboard | Highlighter",
-  description: "Manage your content and audience on Highlighter",
-}
 
 export default function DashboardPage() {
   return (
