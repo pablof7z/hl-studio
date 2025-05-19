@@ -1,8 +1,7 @@
 # Project File Inventory
 
 ## Libraries used
-- @nostr-dev-kit/ndk
-- ndk-hooks
+- @nostr-dev-kit/ndk-hooks
 - Zustand/Jotai (for stores)
 - Next.js
 - TypeScript
@@ -21,6 +20,9 @@
 - app/
     - globals.css
     - layout.tsx
+    - api/
+        - me/
+            - route.ts
     - dashboard/
         - layout.tsx
         - page.tsx
@@ -114,63 +116,18 @@
         - import-subscribers.tsx
         - subscribers-content.tsx
         - subscribers-list.tsx
-    - ui/
-        - accordion.tsx
-        - alert-dialog.tsx
-        - alert.tsx
-        - aspect-ratio.tsx
-        - avatar.tsx
-        - badge.tsx
-        - breadcrumb.tsx
-        - button.tsx
-        - calendar.tsx
-        - card.tsx
-        - carousel.tsx
-        - chart.tsx
-        - checkbox.tsx
-        - collapsible.tsx
-        - command.tsx
-        - context-menu.tsx
-        - dialog.tsx
-        - drawer.tsx
-        - dropdown-menu.tsx
-        - form.tsx
-        - hover-card.tsx
-        - input-otp.tsx
-        - input.tsx
-        - label.tsx
-        - menubar.tsx
-        - navigation-menu.tsx
-        - pagination.tsx
-        - popover.tsx
-        - progress.tsx
-        - radio-group.tsx
-        - resizable.tsx
-        - scroll-area.tsx
-        - select.tsx
-        - separator.tsx
-        - sheet.tsx
-        - sidebar.tsx
-        - skeleton.tsx
-        - slider.tsx
-        - sonner.tsx
-        - switch.tsx
-        - table.tsx
-        - tabs.tsx
-        - textarea.tsx
-        - toast.tsx
-        - toaster.tsx
-        - toggle-group.tsx
-        - toggle.tsx
-        - tooltip.tsx
-        - use-mobile.tsx
-        - use-toast.ts
+    - ui/ (don't expand the ui directory, it's just shadcn files)
 - data/
     - mock-recommendations.ts
     - mock-scheduled-posts.ts
     - mock-subscribers.ts
     - mock-users.ts
 - domains/
+    - api/
+        - index.ts
+        - middleware.ts
+        - hooks/
+            - useAPI.ts
     - articles/
         - index.ts
         - types.ts
@@ -250,7 +207,7 @@
 
 - All code follows the offline-first principle (no loading flags).
 - Components are organized by domain and feature, with a clear separation of concerns.
-- Barrel exports are present in `src/domains/articles/index.ts`, `src/domains/auth/index.ts`, `src/features/dashboard/index.ts`, `src/features/feed/index.ts`, `src/features/login/index.ts`, and `src/ui/index.ts`.
+- Barrel exports are present in `src/domains/api/index.ts`, `src/domains/articles/index.ts`, `src/domains/auth/index.ts`, `src/features/dashboard/index.ts`, `src/features/feed/index.ts`, `src/features/login/index.ts`, and `src/ui/index.ts`.
 - NDK is instantiated as a singleton in `src/ndk/index.ts` and booted in `src/app/layout.tsx`.
 - All hooks use the `useCamel` naming convention, and components use PascalCase.
 - All files use 4-space indentation and strict TypeScript.
