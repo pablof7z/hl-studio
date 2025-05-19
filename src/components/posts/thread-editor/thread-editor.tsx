@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ThreadPost } from "@/components/posts/thread-editor/thread-post"
 import { ThreadSidebar } from "@/components/posts/thread-editor/thread-sidebar"
-import { ImageIcon, ArrowLeft, Clock } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { PostScheduleDialog, type ScheduleSettings } from "@/components/posts/post-schedule-dialog"
-import { ScheduleIndicator } from "@/components/posts/schedule-indicator"
 
 export interface Post {
   id: string
@@ -19,7 +17,6 @@ export interface Post {
 export function ThreadEditor() {
   const [posts, setPosts] = useState<Post[]>([{ id: "1", content: "", images: [] }])
   const [activePostId, setActivePostId] = useState<string>("1")
-  const [scheduleSettings, setScheduleSettings] = useState<ScheduleSettings | null>(null)
 
   const addPost = () => {
     const newPost: Post = {
@@ -49,12 +46,6 @@ export function ThreadEditor() {
     }
   }
 
-  const handleSchedule = (settings: ScheduleSettings) => {
-    setScheduleSettings(settings)
-    // In a real app, you would save this to the backend
-    console.log("Thread scheduled with settings:", settings)
-  }
-
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <ThreadSidebar />
@@ -75,22 +66,8 @@ export function ThreadEditor() {
             </Tabs>
           </div>
           <div className="flex items-center gap-2">
-            <PostScheduleDialog
-              onSchedule={handleSchedule}
-              postType="thread"
-              trigger={
-                scheduleSettings ? (
-                  <ScheduleIndicator settings={scheduleSettings} />
-                ) : (
-                  <Button variant="outline" size="sm">
-                    <Clock className="mr-2 h-4 w-4" />
-                    Schedule
-                  </Button>
-                )
-              }
-            />
             <Button variant="default" size="sm">
-              {scheduleSettings ? "Update Schedule" : "Publish Now"}
+              {"Continue"}
             </Button>
           </div>
         </div>

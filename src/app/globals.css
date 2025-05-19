@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Spectral font for global use */
+/* Import Inter and Spectral fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 @import '@fontsource/spectral/400.css';
 @import '@fontsource/spectral/500.css';
 @import '@fontsource/spectral/600.css';

@@ -83,12 +83,7 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
 
     return (
         <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>
-                        Mention or reference
-                    </DialogTitle>
-                </DialogHeader>
+            <DialogContent className="sm:max-w-lg !h-[500px] overflow-auto">
                 <div className="flex flex-col space-y-4">
                     <Input
                         id="mention-search-input"
@@ -99,27 +94,23 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="w-full"
+                        className="w-full !text-xl p-0 border-none !ring-0"
                         autoComplete="off"
                         data-testid="mention-search-input"
                     />
-                    {isEventQuery ? (
-                        <MentionSearchResultsEvent
-                            event={event}
-                            onSelectEvent={handleSelectEvent}
-                        />
-                    ) : (
-                        <MentionSearchResultsUsers
-                            users={users}
-                            selectedIndex={selectedIndex}
-                            onSelectUser={handleSelectUser}
-                        />
-                    )}
-                    <div className="text-xs text-muted-foreground">
-                        <p>
-                            Search for a user by name or npub1, or paste a note1/nevent1/naddr1 identifier to reference an event.
-                            Use arrow keys to navigate and Enter to select.
-                        </p>
+                    <div className="flex-1 grow w-full">
+                        {isEventQuery ? (
+                            <MentionSearchResultsEvent
+                                event={event}
+                                onSelectEvent={handleSelectEvent}
+                            />
+                        ) : (
+                            <MentionSearchResultsUsers
+                                users={users}
+                                selectedIndex={selectedIndex}
+                                onSelectUser={handleSelectUser}
+                            />
+                        )}
                     </div>
                 </div>
             </DialogContent>

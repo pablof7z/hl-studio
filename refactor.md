@@ -26,59 +26,6 @@ This document outlines areas in the codebase that exhibit duplication or could b
 
 ---
 
-## 1. Duplicate Utility Hooks
-
-### Issue:
-There are two versions of `useToast` and `useIsMobile` hooks.
-
-*   `src/hooks/use-toast.ts` and `src/components/ui/use-toast.ts`
-*   `src/hooks/use-mobile.tsx` and `src/components/ui/use-mobile.tsx`
-
-The versions in `src/components/ui/` seem to be the more complete implementations, likely from ShadCN. The ones in `src/hooks/` might be earlier or simpler versions.
-
-### Proposed Solution:
-
-**Task:**
-1.  Verify which implementation of `useToast` and `useIsMobile` is currently used and preferred (likely the ones in `src/components/ui/`).
-2.  Remove the unused/simpler versions from `src/hooks/`.
-3.  Update all import paths to point to the canonical version.
-
-**Files to check/modify:**
-*   `src/hooks/use-toast.ts` (potentially remove)
-*   `src/components/ui/use-toast.ts` (keep)
-*   `src/hooks/use-mobile.tsx` (potentially remove)
-*   `src/components/ui/use-mobile.tsx` (keep)
-*   All files importing these hooks.
-
----
-
-## 2. Duplicate Global CSS Files
-
-### Issue:
-There are two global CSS files:
-*   `src/styles/globals.css`
-*   `styles/globals.css` (root level)
-
-The `tailwind.config.ts` references `app/globals.css` (which implies `src/app/globals.css`, likely a typo and should be `src/globals.css` or `styles/globals.css`). The `src/app/globals.css` file contains Tailwind directives and TipTap editor styling, while `src/styles/globals.css` contains more general global styles and font imports. The root `styles/globals.css` also contains Tailwind directives and some base styles.
-
-### Proposed Solution:
-
-**Task:**
-1.  Consolidate all global styles into a single file, preferably `src/app/globals.css` as it's referenced by Tailwind configuration.
-2.  Ensure Tailwind directives (`@tailwind base; @tailwind components; @tailwind utilities;`) are present at the top of the chosen file.
-3.  Move font imports and other base styles from `src/styles/globals.css` and `styles/globals.css` into the consolidated file.
-4.  Delete the redundant global CSS files (`src/styles/globals.css` and `styles/globals.css` if `src/app/globals.css` is chosen as canonical).
-5.  Update `tailwind.config.ts` if necessary to point to the correct canonical global CSS file.
-
-**Files to check/modify:**
-*   `src/app/globals.css` (likely the canonical one)
-*   `src/styles/globals.css` (potential duplicate)
-*   `styles/globals.css` (potential duplicate)
-*   `tailwind.config.ts` (for CSS path)
-*   `src/app/layout.tsx` (for CSS import)
-
----
-
 ## 3. Editor Component Consolidation
 
 ### Issue:
@@ -125,49 +72,6 @@ Choose one of the following approaches for editor components:
 *   `src/components/posts/post-editor.tsx`
 *   `src/components/posts/thread-editor/thread-editor.tsx`
 *   `src/components/posts/thread-editor/thread-post.tsx`
-
----
-
-## 4. Dialog Component Overlap
-
-### Issue:
-Two dialog components manage post publishing/scheduling with some overlapping functionality:
-*   `src/components/posts/ConfirmationDialog.tsx`: Handles title, summary, tags, hero image, audience, and scheduling. It can POST to `/api/posts`.
-*   `src/components/posts/post-schedule-dialog.tsx`: More focused on scheduling details (date, time, timezone, distribution, audience).
-
-The `ConfirmationDialog` appears to be more comprehensive for pre-publish settings, while `PostScheduleDialog` is specifically for scheduling. `LongFormPostPage` uses `ConfirmationDialog`.
-
-### Proposed Solution:
-
-**Decision Point: Dialog Strategy**
-
-*   **Option A: Consolidate into `ConfirmationDialog`**
-    *   **Task:** Enhance `ConfirmationDialog` to fully cover all scheduling options from `PostScheduleDialog`.
-    *   Deprecate `PostScheduleDialog`.
-    *   Update all call sites (e.g., `ScheduleCalendar`, `ThreadEditor`) to use `ConfirmationDialog`. This dialog would need to be flexible enough to handle contexts where only scheduling is needed vs. full pre-publish confirmation.
-
-*   **Option B: Clear Separation of Concerns**
-    *   **Task:**
-        1.  Refine `ConfirmationDialog` to focus solely on content metadata confirmation (title, summary, tags, hero image, audience for *immediate publish*).
-        2.  Refine `PostScheduleDialog` to be the definitive component for *all* scheduling actions, potentially taking initial content metadata as props if needed for display.
-        3.  `ConfirmationDialog` could optionally trigger `PostScheduleDialog` if "Schedule for later" is chosen.
-        4.  Ensure the `ConfirmationDialog`'s internal API POST logic is robust or defers to a dedicated action/hook.
-
-*   **Option C: Modular Dialog Composition**
-    *   **Task:** Break down dialog functionalities into smaller, reusable components (e.g., `ScheduleDateTimeSelector`, `AudienceSelector`, `SocialPreviewEditor`).
-    *   Compose these smaller parts within `ConfirmationDialog` and/or `PostScheduleDialog` as needed.
-    *   This offers maximum flexibility but might be overkill if the use cases aren't diverse enough.
-
-**Specific Task (Consider for Option B or C):**
-1.  The `ConfirmationDialog.tsx` directly uses `useAPI` for posting.
-    *   **Recommendation:** Abstract this API call into a dedicated server action (e.g., in `src/actions/post-actions.ts`) or a domain-specific hook for better separation of concerns and reusability. This aligns with the backend interaction guidelines.
-
-**Files to check/modify:**
-*   `src/components/posts/ConfirmationDialog.tsx`
-*   `src/components/posts/post-schedule-dialog.tsx`
-*   `src/app/editor/post/page.tsx`
-*   `src/components/schedule/schedule-calendar.tsx` (uses `PostScheduleDialog`)
-*   `src/components/posts/thread-editor/thread-editor.tsx` (uses `PostScheduleDialog`)
 
 ---
 
@@ -257,30 +161,6 @@ Several sidebar components are present:
 
 ---
 
-## 8. Avatar Component Standardization
-
-### Issue:
-Multiple Avatar components exist:
-*   `src/components/ui/avatar.tsx`: ShadCN UI Avatar component (`Avatar`, `AvatarImage`, `AvatarFallback`).
-*   `src/ui/atoms/Avatar.tsx`: A custom, simpler `img`-based avatar.
-*   `src/features/nostr/components/user/UserAvatar.tsx`: Uses the ShadCN Avatar and fetches profile info for a Nostr pubkey.
-
-### Proposed Solution:
-
-**Task:**
-1.  **Standardize on `src/components/ui/avatar.tsx` (ShadCN version) as the base.**
-2.  Refactor `src/features/nostr/components/user/UserAvatar.tsx` to ensure it correctly uses the ShadCN `Avatar` primitives if it's not already doing so perfectly. It should encapsulate the logic for displaying a Nostr user's avatar including fallback to initials.
-3.  Deprecate the custom `src/ui/atoms/Avatar.tsx`.
-4.  Update all usages of avatars to use either the base ShadCN `Avatar` or the specialized `UserAvatar` for Nostr users.
-
-**Files to check/modify:**
-*   `src/ui/atoms/Avatar.tsx` (to be deprecated)
-*   `src/components/ui/avatar.tsx` (canonical base)
-*   `src/features/nostr/components/user/UserAvatar.tsx` (canonical for Nostr users)
-*   All files currently importing `src/ui/atoms/Avatar.tsx`.
-
----
-
 ## 9. Editor State Management
 
 ### Issue:
@@ -299,7 +179,6 @@ This can lead to confusion and inconsistencies.
 4.  The properties `isScheduled` and `isEarlyAccess` are also present as UI toggles in `SchedulingOptions.tsx` and used in `AudienceSelection.tsx`. These should be driven by the consolidated editor store.
 
 **Files to check/modify:**
-*   `src/domains/editor/stores/editorStore.ts` (likely to be removed or significantly reduced)
 *   `src/features/long-form-editor/stores/index.ts` (and related files `actions.ts`, `types.ts`)
 *   `src/app/editor/post/page.tsx` (LongFormPostPage)
 *   `src/components/posts/ConfirmationDialog.tsx`

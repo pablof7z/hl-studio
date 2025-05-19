@@ -170,3 +170,34 @@
     border-radius: 4px;
     padding: 2px 4px;
 }
+/* Dark mode overrides for longform editor */
+@media (prefers-color-scheme: dark) {
+    .longform-content {
+        color: #eaeaea;
+        background: transparent;
+    }
+    .longform-content h1,
+    .longform-content h2,
+    .longform-content h3,
+    .longform-content--title {
+        color: #f5f5f5;
+    }
+    .longform-content a {
+        color: #8ab4f8;
+    }
+    .longform-content blockquote {
+        border-left: 3px solid #eaeaea;
+        color: #b0b0b0;
+    }
+    .longform-content pre,
+    .longform-content code {
+        background-color: #23272e;
+        color: #eaeaea;
+    }
+    .longform-editor .is-editor-empty:first-child::before {
+        color: #666;
+    }
+    .longform-content hr {
+        background-color: #333;
+    }
+}

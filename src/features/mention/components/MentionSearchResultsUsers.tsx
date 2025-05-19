@@ -56,15 +56,11 @@ export const MentionSearchResultsUsers: React.FC<MentionSearchResultsUsersProps>
     onSelectUser
 }) => {
     if (users.length === 0) {
-        return (
-            <div className="p-4 text-center text-muted-foreground">
-                No users found
-            </div>
-        );
+        return null;
     }
 
     return (
-        <div className="max-h-[300px] overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
             {users.map((user, index) => (
                 <MentionUserResult
                     key={user.pubkey}

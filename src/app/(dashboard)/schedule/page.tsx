@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { ScheduleCalendar } from "@/components/schedule/schedule-calendar"
 
 export const metadata: Metadata = {
   title: "Content Calendar | Highlighter",
@@ -12,7 +11,6 @@ export default function SchedulePage() {
   return (
     <DashboardShell>
       <DashboardHeader heading="Content Calendar" text="Visualize and manage your content schedule" />
-      <ScheduleCalendar />
     </DashboardShell>
   )
 }
