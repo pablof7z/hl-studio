@@ -10,8 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Bell, HelpCircle, Search } from "lucide-react"
 import { PostTypeDropdown } from "@/components/posts/post-type-dropdown"
+import { useNDKSessionLogout } from "@nostr-dev-kit/ndk-hooks"
 
 export function Header() {
+  const logout = useNDKSessionLogout();
+  
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4">
       <div className="flex items-center gap-2">
@@ -49,7 +52,7 @@ export function Header() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
               <Link href="/logout" className="w-full">
                 Logout
               </Link>

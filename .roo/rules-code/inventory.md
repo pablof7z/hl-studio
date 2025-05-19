@@ -1,4 +1,5 @@
 # Project File Inventory
+You MUST keep this file up to date with your work, when you refactor/add/delete something, add it to this inventory. When you observe something in the inventory is out of date, update this file.
 
 ## Libraries used
 - @nostr-dev-kit/ndk-hooks

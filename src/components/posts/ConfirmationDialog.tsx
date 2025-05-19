@@ -1,184 +1,68 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
-import Image from "next/image"
-import { CalendarIcon, Edit, ImageIcon, X } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverPortal, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { TimePickerDemo } from "./time-picker" // Correct relative path
-import { useAccountStore } from "@/domains/account/stores/accountStore"
-import { useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks"
-import UserAvatar from "@/features/nostr/components/user/UserAvatar"
-import UserName from "@/features/nostr/components/user/UserName"
+import { TimePickerDemo } from "./time-picker"; // Correct relative path
 
-export interface ConfirmationDialogCallbackData {
-    title: string;
-    summary: string;
-    tags: string[];
-    heroImage: string; // base64 or URL
-    audience: "all" | "subscribers";
-    scheduledAt?: Date; // Present if scheduling
-}
-
-/**
- * If onPublish/onSchedule are not provided, the dialog will POST to /api/posts using useAPI and update SWR.
- */
 export interface ConfirmationDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    initialData: {
-        title: string;
-        summary: string;
-        tags: string[];
-        heroImage: string;
-        publicationName: string;
-    };
     hasPaidPlan?: boolean;
-    onPublish?: (data: ConfirmationDialogCallbackData) => void;
-    onSchedule?: (data: ConfirmationDialogCallbackData) => void;
+    onPublish: () => void;
+    onSchedule: (publishAt: Date) => void;
+    children?: React.ReactNode;
 }
-
-import { useAPI } from "@/domains/api/hooks/useAPI";
-import { useCallback } from "react";
 
 export function ConfirmationDialog({
     open,
     onOpenChange,
-    initialData,
     hasPaidPlan = false,
     onPublish,
     onSchedule,
+    children,
 }: ConfirmationDialogProps) {
-    const [currentTitle, setCurrentTitle] = useState(initialData.title)
-    const [currentSummary, setCurrentSummary] = useState(initialData.summary)
-    const [currentHeroImage, setCurrentHeroImage] = useState(initialData.heroImage)
-    const [currentTags, setCurrentTags] = useState<string[]>(initialData.tags)
-    const [newTag, setNewTag] = useState("")
-    const [date, setDate] = useState<Date | undefined>(undefined)
-    const [time, setTime] = useState<string>("09:00") // For TimePickerDemo
-    const [isScheduled, setIsScheduled] = useState(false)
-    const [audience, setAudience] = useState<"all" | "subscribers">("all")
-    const [isEditing, setIsEditing] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const [submitting, setSubmitting] = useState(false)
-    const currentPubkey = useNDKCurrentPubkey();
-
-    // Backend API integration
-    const api = useAPI();
-    const { mutate } = api.get("/api/posts");
-
-    // Helper to actually schedule/publish via backend if no prop provided
-    const backendSchedule = useCallback(
-        async (data: ConfirmationDialogCallbackData) => {
-            setSubmitting(true);
-            setError(null);
-            try {
-                const payload: Record<string, any> = {
-                    content: data.summary, // or data.title + data.summary? (adjust as needed)
-                    title: data.title,
-                    summary: data.summary,
-                    tags: data.tags,
-                    heroImage: data.heroImage,
-                    audience: data.audience,
-                };
-                if (data.scheduledAt) {
-                    payload.scheduledAt = data.scheduledAt.toISOString();
-                }
-                await api.post("/api/posts", payload);
-                mutate();
-                onOpenChange(false);
-            } catch (err: any) {
-                setError(err?.message || "Failed to schedule post.");
-            } finally {
-                setSubmitting(false);
-            }
-        },
-        [api, mutate, onOpenChange]
-    );
+    const [date, setDate] = useState<Date | undefined>(undefined);
+    const [time, setTime] = useState<string>("09:00");
+    const [isScheduled, setIsScheduled] = useState(false);
+    const [audience, setAudience] = useState<"all" | "subscribers">("all");
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (open) {
-            setCurrentTitle(initialData.title);
-            setCurrentSummary(initialData.summary);
-            setCurrentHeroImage(initialData.heroImage);
-            setCurrentTags(initialData.tags);
-            // Reset scheduling and UI states
             setDate(undefined);
             setTime("09:00");
             setIsScheduled(false);
             setAudience("all");
-            setIsEditing(false);
         }
-    }, [open, initialData]);
-
-    const handleAddTag = () => {
-        if (newTag && !currentTags.includes(newTag)) {
-            setCurrentTags([...currentTags, newTag])
-            setNewTag("")
-        }
-    }
-
-    const handleRemoveTag = (tagToRemove: string) => {
-        setCurrentTags(currentTags.filter((tag) => tag !== tagToRemove))
-    }
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onload = () => {
-                setCurrentHeroImage(reader.result as string)
-            }
-            reader.readAsDataURL(file)
-        }
-    }
+    }, [open]);
 
     const handleSubmit = async () => {
         setError(null);
-        const callbackData: Omit<ConfirmationDialogCallbackData, "scheduledAt"> = {
-            title: currentTitle,
-            summary: currentSummary,
-            tags: currentTags,
-            heroImage: currentHeroImage,
-            audience: audience,
-        };
-
+        // The parent should provide the up-to-date data via the children component's state
+        // so we just call onPublish/onSchedule or backendSchedule with the latest props
+        // For now, we assume the parent will handle the data
         if (isScheduled) {
             if (date && time) {
                 const scheduleDateTime = new Date(date);
                 const [hours, minutes] = time.split(':').map(Number);
                 scheduleDateTime.setHours(hours, minutes, 0, 0);
-                const data = { ...callbackData, scheduledAt: scheduleDateTime };
-                if (onSchedule) {
-                    onSchedule(data);
-                    onOpenChange(false);
-                } else {
-                    await backendSchedule(data);
-                }
+                if (onSchedule)
+                    onSchedule(scheduleDateTime);
             } else {
                 setError("Date and time must be set for scheduling.");
                 return;
             }
-        } else {
-            if (onPublish) {
-                onPublish(callbackData);
-                onOpenChange(false);
-            } else {
-                await backendSchedule(callbackData as ConfirmationDialogCallbackData);
-            }
         }
+            onPublish();
+        onOpenChange(false);
     };
 
     return (
@@ -191,131 +75,7 @@ export function ConfirmationDialog({
                     <div className="mb-2 text-sm text-red-600">{error}</div>
                 )}
                 <div className="grid gap-6 py-4">
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-medium">Social Preview</h3>
-                            <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                                {isEditing ? (
-                                    "Done"
-                                ) : (
-                                    <>
-                                        <Edit className="mr-2 h-4 w-4" /> Edit
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-
-                        <Card className="overflow-hidden border shadow-sm">
-                            <CardContent className="p-4">
-                                <div className="flex gap-4">
-                                    <div className="flex-1 space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <UserAvatar pubkey={currentPubkey ?? ""} size={"xs"} />
-                                            <span className="text-sm font-medium"><UserName pubkey={currentPubkey ?? ""} /></span>
-                                        </div>
-
-                                        {isEditing ? (
-                                            <>
-                                                <Input
-                                                    value={currentTitle}
-                                                    onChange={(e) => setCurrentTitle(e.target.value)}
-                                                    placeholder="Article title"
-                                                    className="border-0 p-0 h-auto font-semibold text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                                />
-                                                <Textarea
-                                                    value={currentSummary}
-                                                    onChange={(e) => setCurrentSummary(e.target.value)}
-                                                    placeholder="Brief summary of your article"
-                                                    className="border-0 p-0 h-auto min-h-0 text-sm text-muted-foreground resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                                    rows={2}
-                                                />
-                                                <div className="flex flex-wrap gap-1 pt-1">
-                                                    {currentTags.map((tag) => (
-                                                        <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0 gap-1">
-                                                            {tag}
-                                                            <button onClick={() => handleRemoveTag(tag)} className="ml-1 h-3 w-3 rounded-full flex items-center justify-center">
-                                                                <X className="h-2 w-2" />
-                                                            </button>
-                                                        </Badge>
-                                                    ))}
-                                                    <div className="inline-flex">
-                                                        <Input
-                                                            value={newTag}
-                                                            onChange={(e) => setNewTag(e.target.value)}
-                                                            placeholder="+ Add tag"
-                                                            className="border-0 p-0 h-auto w-20 text-xs shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === "Enter") {
-                                                                    e.preventDefault()
-                                                                    handleAddTag()
-                                                                }
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <h3 className="font-semibold text-base line-clamp-2">{currentTitle || "Untitled"}</h3>
-                                                <p className="text-sm text-muted-foreground line-clamp-2">{currentSummary || "No summary"}</p>
-                                                <div className="flex flex-wrap gap-1 pt-1">
-                                                    {currentTags.length === 0 && (
-                                                        <span className="text-xs text-muted-foreground italic">
-                                                            No tags
-                                                        </span>
-                                                    )}
-                                                    {currentTags.map((tag) => (
-                                                        <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">
-                                                            {tag}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-md bg-muted">
-                                        {currentHeroImage ? (
-                                            <>
-                                                <Image
-                                                    src={currentHeroImage || "/placeholder.svg"} // placeholder if src is empty
-                                                    alt="Hero image"
-                                                    width={80}
-                                                    height={80}
-                                                    className="object-cover w-full h-full"
-                                                />
-                                                {isEditing && (
-                                                    <Label
-                                                        htmlFor="image-upload"
-                                                        className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                                                    >
-                                                        <div className="text-white text-xs font-medium">Replace</div>
-                                                    </Label>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <Label
-                                                htmlFor="image-upload"
-                                                className={`flex h-full w-full items-center justify-center ${isEditing ? "cursor-pointer" : "cursor-default"}`}
-                                            >
-                                                <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
-                                            </Label>
-                                        )}
-                                        {isEditing && (
-                                            <Input
-                                                id="image-upload"
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                onChange={handleImageUpload}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
+                    {children}
                     <Separator />
 
                     <div className="space-y-4">
@@ -370,7 +130,7 @@ export function ConfirmationDialog({
                             </RadioGroup>
                         </div>
 
-                        <div className="space-y-2 pt-2">
+                        {/* <div className="space-y-2 pt-2">
                             <Label className="text-sm font-medium">Target Audience</Label>
                             <RadioGroup value={audience} onValueChange={(value) => setAudience(value as "all" | "subscribers")} className="flex flex-col space-y-1">
                                 <div className="flex items-center space-x-2">
@@ -408,7 +168,7 @@ export function ConfirmationDialog({
                                     </p>
                                 </div>
                             )}
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 
@@ -418,11 +178,8 @@ export function ConfirmationDialog({
                     </Button>
                     <Button
                         onClick={handleSubmit}
-                        disabled={submitting}
                     >
-                        {submitting
-                            ? (isScheduled ? "Scheduling..." : "Publishing...")
-                            : (isScheduled ? "Schedule" : "Publish") + " Article"}
+                        {(isScheduled ? "Schedule" : "Publish") + " Article"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

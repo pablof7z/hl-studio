@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { NDKFilter, NDKKind, NDKUser } from "@nostr-dev-kit/ndk";
+import { NDKEvent, NDKFilter, NDKKind, NDKUser } from "@nostr-dev-kit/ndk";
 import { useNDK, useSubscribe } from "@nostr-dev-kit/ndk-hooks";
 import { nip19 } from "nostr-tools";
 import { NostrUserSearchResult } from "../types";
@@ -16,13 +16,40 @@ export function useNostrUserSearch(query: string, limit = 10): NostrUserSearchRe
     // Simple debounce implementation
     const [debouncedQuery, setDebouncedQuery] = useState("");
     const [userMap, setUserMap] = useState<Map<string, NDKUser>>(new Map());
+
+    const setFromBech32 = (query: string) => {
+        let user: NDKUser | null = null;
+
+        try {
+            if (query.startsWith("npub1")) user = new NDKUser({ npub: query });
+            else if (query.startsWith("nprofile1")) user = new NDKUser({ nprofile: query });
+        } catch {
+            return false;
+        }
+
+        if (user) {
+            setUserMap(new Map([[user.pubkey, user]]));
+            return true;
+        }
+    };
     
     // Debounce the query
     useEffect(() => {
+        if (query.trim() === "") {
+            setUserMap(new Map());
+            setDebouncedQuery("");
+            return;
+        }
+        
+        if (
+            query.startsWith("npub1") ||
+            query.startsWith("nprofile1")
+        ) if (setFromBech32(query)) return;
+        
         const timer = setTimeout(() => {
             setDebouncedQuery(query);
         }, 300);
-        
+
         return () => clearTimeout(timer);
     }, [query]);
     
@@ -41,24 +68,6 @@ export function useNostrUserSearch(query: string, limit = 10): NostrUserSearchRe
 
         const searchFilters: NDKFilter[] = [];
         
-        // Check if the query is a valid npub
-        if (debouncedQuery.startsWith('npub1')) {
-            try {
-                const { type, data } = nip19.decode(debouncedQuery);
-                if (type === 'npub') {
-                    // Search by exact pubkey
-                    searchFilters.push({
-                        kinds: [NDKKind.Metadata],
-                        authors: [data as string],
-                        limit
-                    });
-                    return searchFilters;
-                }
-            } catch (e) {
-                // Not a valid npub, continue with other search methods
-            }
-        }
-        
         // Search by name or username
         searchFilters.push({
             kinds: [NDKKind.Metadata],
@@ -69,7 +78,7 @@ export function useNostrUserSearch(query: string, limit = 10): NostrUserSearchRe
     }, [debouncedQuery, limit]);
 
     // Subscribe to user metadata events
-    const { events, eose } = useSubscribe(filters, { relayUrls: ['wss://relay.nostr.band'], closeOnEose: true });
+    const { events, eose } = useSubscribe(filters, { relayUrls: ['wss://relay.nostr.band'], closeOnEose: true }, [filters]);
 
     // Process events into users
     useEffect(() => {

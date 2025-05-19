@@ -1,32 +1,34 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Settings } from "lucide-react"
-import { useEditorStore } from "../../stores"
 import { SettingsSidebar } from "./SettingsSidebar"
 import { MetadataSection } from "./MetadataSection"
 import { MonetizationSection } from "./MonetizationSection"
 
 export function SettingsModal() {
-    const { isSettingsModalOpen, closeSettingsModal, activeSettingsTab } = useEditorStore()
+    const [isOpen, setIsOpen] = useState(false)
+    const [activeTab, setActiveTab] = useState<'metadata' | 'monetization'>('metadata')
 
     return (
         <>
-            <Button variant="ghost" size="sm" onClick={() => useEditorStore.getState().openSettingsModal()}>
+            <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
             </Button>
 
-            <Dialog open={isSettingsModalOpen} onOpenChange={(open) => {
-                if (!open) closeSettingsModal()
-            }}>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden">
                     <div className="flex h-[500px]">
-                        <SettingsSidebar />
+                        <SettingsSidebar
+                            activeSettingsTab={activeTab}
+                            setActiveSettingsTab={setActiveTab}
+                        />
                         <div className="flex-1 p-6 overflow-y-auto">
-                            {activeSettingsTab === 'metadata' && <MetadataSection />}
-                            {activeSettingsTab === 'monetization' && <MonetizationSection />}
+                            {activeTab === 'metadata' && <MetadataSection />}
+                            {activeTab === 'monetization' && <MonetizationSection />}
                         </div>
                     </div>
                 </DialogContent>

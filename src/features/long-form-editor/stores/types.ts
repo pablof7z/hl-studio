@@ -1,4 +1,4 @@
-import { NDKUser } from '@nostr-dev-kit/ndk';
+import { NDKArticle, NDKUser } from '@nostr-dev-kit/ndk-hooks';
 
 export type ZapSplit = {
     user: NDKUser;
@@ -14,13 +14,10 @@ export interface EditorState {
     // Metadata
     tags: string[];
     publishedAt: Date | null;
+    image: string | null;
     
     // Monetization
     zapSplits: ZapSplit[];
-    
-    // UI state
-    isSettingsModalOpen: boolean;
-    activeSettingsTab: 'metadata' | 'monetization';
 }
 
 export interface EditorActions {
@@ -36,14 +33,12 @@ export interface EditorActions {
     removeZapSplit: (userPubkey: string) => void;
     updateZapSplit: (userPubkey: string, split: number) => void;
     
-    // UI actions
-    openSettingsModal: (tab?: 'metadata' | 'monetization') => void;
-    closeSettingsModal: () => void;
-    setActiveSettingsTab: (tab: 'metadata' | 'monetization') => void;
-    
     // Publishing actions
     publishArticle: () => void;
     saveAsDraft: () => void;
+    setImage: (img: string | null) => void;
+
+    getEvents: (publishAt?: Date) => NDKArticle[];
 }
 
 export type EditorStore = EditorState & EditorActions;

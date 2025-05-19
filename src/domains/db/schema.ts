@@ -8,7 +8,7 @@ import {
 /**
  * Post status type for SQLite (use as a TypeScript union).
  */
-export type PostStatus = "draft" | "pending" | "published" | "failed";
+export type PostStatus = "draft" | "scheduled" | "published" | "failed";
 
 /**
  * Posts table schema for SQLite.

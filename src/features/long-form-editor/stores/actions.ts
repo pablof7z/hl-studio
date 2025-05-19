@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { EditorStore, EditorState, ZapSplit } from './types';
-import { NDKUser } from '@nostr-dev-kit/ndk';
+import { NDKArticle, NDKUser } from '@nostr-dev-kit/ndk-hooks';
 
 export const createEditorActions: StateCreator<
     EditorStore,
@@ -34,16 +34,6 @@ export const createEditorActions: StateCreator<
         set({ zapSplits: updatedSplits });
     },
     
-    // UI actions
-    openSettingsModal: (tab) => set({ 
-        isSettingsModalOpen: true, 
-        activeSettingsTab: tab || get().activeSettingsTab 
-    }),
-    
-    closeSettingsModal: () => set({ isSettingsModalOpen: false }),
-    
-    setActiveSettingsTab: (tab) => set({ activeSettingsTab: tab }),
-    
     // Publishing actions - these will be implemented in a separate hook
     publishArticle: () => {
         // This is a placeholder - actual implementation will be in useEditorPublish hook
@@ -53,5 +43,25 @@ export const createEditorActions: StateCreator<
     saveAsDraft: () => {
         // This is a placeholder - actual implementation will be in useEditorPublish hook
         console.log('Saving as draft with state:', get());
+    },
+
+    setImage: (img: string | null) => set({ image: img }),
+
+    getEvents: (publishAt?: Date) => {
+        const publisheTimestamp = publishAt ? Math.floor(publishAt.getTime() / 1000) : undefined;
+        const { content, title, summary, tags, image, zapSplits } = get();
+        const article = new NDKArticle(undefined);
+        article.content = content;
+        article.title = title;
+        article.summary = summary;
+        article.image = image ?? undefined;
+        article.tags = tags.map(tag => ['t', tag]);
+        if (publisheTimestamp) article.created_at = publisheTimestamp;
+        article.published_at = publisheTimestamp;
+        article.tags.push(
+            ...zapSplits.map(split => ['zap', split.user.pubkey, split.split.toString()])
+        )
+
+        return [article];
     }
 });

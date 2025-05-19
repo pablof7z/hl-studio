@@ -1,7 +1,9 @@
 import { useCallback } from "react";
+import { NDKEvent, wrapEvent } from "@nostr-dev-kit/ndk-hooks";
 import useSWR, { mutate as globalMutate, SWRResponse, KeyedMutator } from "swr";
-import { useNDK, useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks";
+import NDK, { useNDK, useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks";
 import { createNip98AuthHeader } from "../utils/createNip98AuthHeader";
+import { ApiPost, ClientPost, ApiPostsResponse } from "../schemas";
 
 type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -17,8 +19,17 @@ type APIResponse<T> = SWRResponse<T, Error> & {
     mutate: KeyedMutator<T>;
 };
 
+/**
+ * Payload for creating a scheduled post via POST /api/posts
+ */
+export interface ScheduledPostPayload {
+    scheduledAt: string;
+    status: string;
+    rawEvent: any;
+}
+
 async function fetchWithAuth(
-    ndk: any,
+    ndk: NDK | null,
     pubkey: string | undefined,
     url: string,
     options: APIOptions = {}
@@ -150,5 +161,53 @@ export function useAPI() {
         put,
         delete: del,
         mutate,
+        /**
+         * Typed helper for creating a scheduled post.
+         */
+        addPost: useCallback(
+            async (payload: ScheduledPostPayload) => {
+                return post("/api/posts", payload);
+            },
+            [post]
+        ),
+        /**
+         * Typed helper for fetching scheduled posts.
+         * Returns posts with rawEvent parsed and wrapped as NDKEvent.
+         */
+        getPosts: useCallback(
+            (): APIResponse<ClientPost[]> => {
+                // SWR key is /api/posts + pubkey
+                const swrKey = pubkey ? ["/api/posts", pubkey] : null;
+                const swr = useSWR<ClientPost[]>(
+                    swrKey,
+                    async () => {
+                        const res: ApiPostsResponse = await fetchWithAuth(ndk, pubkey, "/api/posts", { method: "GET" });
+                        // The backend returns { posts: [...] }
+                        const posts = Array.isArray(res.posts) ? res.posts : [];
+                        // For each post, parse rawEvent and wrap as NDKEvent
+                        return await Promise.all(posts.map(async (post: ApiPost) => {
+                            let wrappedEvent = null;
+                            try {
+                                const parsed = JSON.parse(post.rawEvent);
+                                const ndkEvent = new NDKEvent(ndk ?? undefined, parsed);
+                                wrappedEvent = await wrapEvent(ndkEvent);
+                            } catch (e) {
+                                // fallback: leave as null
+                            }
+                            return {
+                                ...post,
+                                event: wrappedEvent,
+                            };
+                        }));
+                    },
+                    {
+                        revalidateOnFocus: true,
+                        shouldRetryOnError: true,
+                    }
+                );
+                return swr;
+            },
+            [ndk, pubkey]
+        ),
     };
 }

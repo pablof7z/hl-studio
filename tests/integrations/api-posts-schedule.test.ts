@@ -1,6 +1,12 @@
 import NDK, { NDKEvent, NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
 import { expect, test, beforeEach, afterEach } from "vitest";
 import { createNip98AuthHeader } from "@/domains/api/utils/createNip98AuthHeader";
+import {
+    ApiPostSchema,
+    ApiPostsResponseSchema,
+    type ApiPost,
+    type ApiPostsResponse,
+} from "@/domains/api/schemas";
 
 const TEST_NSEC = 'nsec1xnls0hgx09jtmy69wl96fsljee9erfk6wqvpagqdys7xa827xrtsz64xmm';
 const API_BASE = "http://localhost:4001/api/posts";
@@ -50,8 +56,10 @@ test("schedules a post and lists it for the user", async () => {
     console.log("POST response:", postRes);
     expect(postRes.status).toBe(200);
     const postJson = await postRes.json();
+    // Validate the POST response with Zod
+    const createdPost: ApiPost = ApiPostSchema.parse(postJson.post);
     expect(postJson).toHaveProperty("post");
-    expect(postJson.post.authorPubkey).toBe(pubkey);
+    expect(createdPost.authorPubkey).toBe(pubkey);
 
     // 5. Create NIP-98 auth header for GET
     const getAuthHeader = await createNip98AuthHeader(ndk, API_BASE, "GET", undefined, signer);
@@ -65,17 +73,19 @@ test("schedules a post and lists it for the user", async () => {
     });
     expect(getRes.status).toBe(200);
     const getJson = await getRes.json();
-    expect(getJson).toHaveProperty("posts");
-    const posts = getJson.posts;
+    // Validate the GET response with Zod
+    const parsed: ApiPostsResponse = ApiPostsResponseSchema.parse(getJson);
+    expect(parsed).toHaveProperty("posts");
+    const posts = parsed.posts;
 
     // 7. Find the scheduled post by content/tag
     const found = posts.find(
-        (p: any) =>
+        (p) =>
             p.authorPubkey === pubkey &&
             p.status === status &&
             p.scheduledAt &&
             JSON.parse(p.rawEvent).content === "Scheduled post from test"
     );
     expect(found).toBeDefined();
-    expect(new Date(found.scheduledAt).toISOString()).toBe(scheduledAt.toISOString());
+    expect(new Date(found!.scheduledAt!).toISOString()).toBe(scheduledAt.toISOString());
 });

@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { format } from "date-fns" // Import format
+import { format } from "date-fns"; // Import format
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { NostrEditor } from "@/components/editor/nostr-editor"
 import { ScheduleIndicator, type ScheduleIndicatorSettings } from "@/components/posts/schedule-indicator"
 import { useEvent } from "@nostr-dev-kit/ndk-hooks"
-import { NDKKind, NDKArticle } from "@nostr-dev-kit/ndk"
+import { NDKKind, NDKArticle } from "@nostr-dev-kit/ndk-hooks"
 import { SettingsModal, useEditorStore, useEditorPublish } from "@/features/long-form-editor"
-import { ConfirmationDialog, type ConfirmationDialogCallbackData } from "@/components/posts/ConfirmationDialog" // Updated import
+import { ConfirmationDialog } from "@/components/posts/ConfirmationDialog"; // Updated import
+import { SocialPreview } from "@/features/long-form-editor/components/SocialPreview"
+import { useAPI } from "@/domains/api"
+import { Input } from "@/components/ui/input";
 
 
 export default function LongFormPostPage() {
@@ -20,15 +23,14 @@ export default function LongFormPostPage() {
 
     // Get store state and actions
     const {
-        content,
         setContent,
         title,
         setTitle,
-        summary,
         setSummary,
-        tags,
         setTags,
         setPublishedAt,
+        getEvents,
+        setImage,
     } = useEditorStore();
 
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -39,7 +41,8 @@ export default function LongFormPostPage() {
     // Status state
     const [status, setStatus] = useState("Draft");
     const [scheduledDateTime, setScheduledDateTime] = useState<Date | null>(null);
-
+    const api = useAPI();
+    const { mutate } = api.get("/api/posts");
 
     // Use the useEvent hook from ndk-hooks to fetch the event by encoded ID
     const event = useEvent(encodedId || false);
@@ -48,6 +51,7 @@ export default function LongFormPostPage() {
         if (event) {
             if (event.kind === NDKKind.Article) {
                 const article = NDKArticle.from(event);
+                setImage(article.image ?? null);
                 setContent(article.content ?? "");
                 setTitle(article.title ?? "");
                 setSummary(article.summary ?? "");
@@ -62,28 +66,24 @@ export default function LongFormPostPage() {
         }
     }, [event, setContent, setTitle, setSummary, setTags, setPublishedAt]);
 
-    const handlePublishOrSchedule = (data: ConfirmationDialogCallbackData) => {
-        // Update the editor store with the latest from the dialog
-        setTitle(data.title);
-        setSummary(data.summary);
-        setTags(data.tags);
-        // Note: heroImage and audience are not directly in editorStore yet.
-        // For now, we'll use them for the publish/schedule action.
-
-        if (data.scheduledAt) {
+    const handlePublishOrSchedule = async (publishAt?: Date) => {
+        if (publishAt) {
             // This is a schedule action
-            setPublishedAt(data.scheduledAt); // Update store with scheduled date
-            console.log("Scheduling post with data:", data);
-            // In a real app, you would call a backend or NDK function to schedule
-            // For now, we simulate by updating status and storing schedule time
+            setPublishedAt(publishAt); // Update store with scheduled date
             setStatus("Scheduled");
-            setScheduledDateTime(data.scheduledAt);
-            // Potentially call a specific schedule function from useEditorPublish if it exists
-            // e.g., scheduleArticle({ ...data });
+            setScheduledDateTime(publishAt);
+            for (const event of getEvents(publishAt)) {
+                console.log("schedule:");
+                event.dump();
+                await api.addPost({
+                    scheduledAt: publishAt ? publishAt.toISOString() : "",
+                    status: "scheduled",
+                    rawEvent: JSON.stringify(event.rawEvent())
+                });
+            }
         } else {
             // This is a publish now action
             setPublishedAt(new Date()); // Update store with current date
-            console.log("Publishing post with data:", data);
             publishArticle(); // This will use the latest state from useEditorStore
             setStatus("Published");
             setScheduledDateTime(null);
@@ -100,14 +100,6 @@ export default function LongFormPostPage() {
             console.log("Draft saved:", article);
             setStatus("Draft");
         }
-    };
-
-    const dialogInitialData = {
-        title: title || "",
-        summary: summary || "",
-        tags: tags || [],
-        heroImage: "", // Placeholder - this should come from store or a default
-        publicationName: "My Nostr Publication", // Placeholder
     };
 
     // Determine schedule settings for the ScheduleIndicator
@@ -160,14 +152,22 @@ export default function LongFormPostPage() {
             <ConfirmationDialog
                 open={isConfirmDialogOpen}
                 onOpenChange={setIsConfirmDialogOpen}
-                initialData={dialogInitialData}
-                onPublish={handlePublishOrSchedule} // Same handler for both, logic inside differentiates
-                onSchedule={handlePublishOrSchedule} // Same handler for both
-                // hasPaidPlan can be wired up later if needed
-            />
+                onPublish={handlePublishOrSchedule}
+                onSchedule={handlePublishOrSchedule}
+            >
+                <SocialPreview />
+            </ConfirmationDialog>
 
             <main className="flex-1">
-                <NostrEditor event={event} onChange={setContent} />
+                <NostrEditor event={event} onChange={setContent}>
+                    <Input
+                        type="text"
+                        placeholder="Title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="w-full p-0 border-0 !outline-none !ring-0 longform-content--title"
+                    />
+                </NostrEditor>
             </main>
 
             <footer className="border-t">

@@ -4,6 +4,7 @@ import Database from "better-sqlite3";
 import { validateNip98Auth, createErrorResponse } from "@/lib/nip98-middleware";
 import { createPost, getUserPosts, NewPostInput } from "@/domains/schedule/db";
 import { PostStatus } from "@/domains/db/schema";
+import { ApiPostsResponseSchema } from "@/domains/api/schemas";
 
 // Create Drizzle database instance
 const sqlite = new Database("sqlite.db");
@@ -35,7 +36,14 @@ export async function GET(req: NextRequest) {
             limit,
             offset,
         });
-        return NextResponse.json({ posts });
+        // Validate with Zod schema
+        try {
+            const validated = ApiPostsResponseSchema.parse({ posts });
+            return NextResponse.json(validated);
+        } catch (e) {
+            console.error("Zod validation error for /api/posts:", e);
+            return createErrorResponse("Invalid posts response format", 500);
+        }
     } catch {
         return createErrorResponse("Failed to fetch posts", 500);
     }
@@ -61,6 +69,7 @@ export async function POST(req: NextRequest) {
         typeof data.status !== "string" ||
         typeof data.rawEvent !== "string"
     ) {
+        console.log("Missing required fields in data:", data);
         return createErrorResponse("Missing required fields: status, rawEvent", 400);
     }
 

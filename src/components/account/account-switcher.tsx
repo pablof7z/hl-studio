@@ -71,7 +71,7 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
             aria-label="Select an account"
             className={cn("w-[220px] justify-between", className)}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 truncate overflow-hidden">
               {selectedAccount ? (
                 selectedAccount.type === 'user' ? (
                   <>

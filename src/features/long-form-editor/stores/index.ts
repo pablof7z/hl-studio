@@ -3,21 +3,18 @@ import { EditorStore, EditorState } from './types';
 import { createEditorActions } from './actions';
 
 // Initial state
-const initialState: EditorState & { showConfirmation: boolean } = {
+const initialState: EditorState = {
     content: '',
     title: '',
     summary: '',
     tags: [],
     publishedAt: null,
     zapSplits: [],
-    isSettingsModalOpen: false,
-    activeSettingsTab: 'metadata',
-    showConfirmation: false,
+    image: null,
 };
 
 // Create the store
-export const useEditorStore = create<EditorStore & { showConfirmation: boolean; setShowConfirmation: (show: boolean) => void }>((set, get, store) => ({
+export const useEditorStore = create<EditorStore>((set, get, store) => ({
     ...initialState,
     ...createEditorActions(set, get, store),
-    setShowConfirmation: (show: boolean) => set({ showConfirmation: show }),
 }));

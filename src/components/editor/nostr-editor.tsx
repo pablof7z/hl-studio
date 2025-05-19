@@ -27,18 +27,7 @@ import { MentionModal } from "@/features/mention/components/MentionModal";
 import { MentionEntity } from "@/features/mention/types";
 import { MentionEditor } from "./MentionEditor";
 import { Markdown } from "tiptap-markdown";
-
-// --- NodeView for naddr ---
-function NAddrNodeView({ node }: any) {
-    // node.attrs.naddr should be the naddr string
-    const naddr = node.attrs.naddr || node.attrs.value || "";
-    // For demo, just show naddr
-    return (
-        <NodeViewWrapper as="span" className="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-mono cursor-pointer hover:bg-green-200 transition" data-entity="naddr">
-            {naddr}
-        </NodeViewWrapper>
-    );
-}
+import { NAddrEditor } from "./NAddrEditor";
 
 export interface NostrEditorProps {
     event?: NDKEvent | null;
@@ -46,11 +35,13 @@ export interface NostrEditorProps {
     kind?: number; // nostr kind, default to NDKKind.Article
     onPublish?: (event: NDKEvent) => void;
     placeholder?: string;
+    children?: React.ReactNode;
 }
 
 
 export function NostrEditor({
     event,
+    children,
     onChange,
     placeholder = "Start writing...",
 }: NostrEditorProps) {
@@ -106,17 +97,14 @@ export function NostrEditor({
                 extend: {
                     nprofile: {
                         addNodeView: () => ReactNodeViewRenderer(MentionEditor),
-                        // Add class to help with styling isolation
                         HTMLAttributes: { class: 'nostr-entity nostr-profile' }
                     },
                     nevent: {
                         addNodeView: () => ReactNodeViewRenderer(NEventEditor),
-                        // Add class to help with styling isolation
                         HTMLAttributes: { class: 'nostr-entity nostr-event' }
                     },
                     naddr: {
-                        addNodeView: () => ReactNodeViewRenderer(NAddrNodeView),
-                        // Add class to help with styling isolation
+                        addNodeView: () => ReactNodeViewRenderer(NAddrEditor),
                         HTMLAttributes: { class: 'nostr-entity nostr-addr' }
                     },
                     image: {
@@ -147,10 +135,10 @@ export function NostrEditor({
                 }
             }),
         ],
-        content: "<h1></h1><h2></h2><p></p>",
+        content: "",
         onUpdate: ({ editor }) => {
-            const html = editor.getHTML();
-            onChange(html);
+            const markdown = editor.storage.markdown.getMarkdown();
+            onChange(markdown);
         },
         editorProps: {
             attributes: {
@@ -198,9 +186,10 @@ export function NostrEditor({
         <div className="w-full flex-col items-center justify-center">
             <EditorToolbar editor={editor} className="max-w-3xl mx-auto" />
             <div className="max-w-3xl mx-auto px-4 py-8">
-                <EditorContent editor={editor} className="min-h-[70vh]" />
+                {children}
+                <EditorContent editor={editor} className="min-h-[70vh] flex w-full" />
             </div>
-            
+
             {/* Render the mention modal */}
             <MentionModal
                 open={mentionModalOpen}

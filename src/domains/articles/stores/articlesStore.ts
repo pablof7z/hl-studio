@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { Hexpubkey, NDKArticle, NDKDraft, NDKKind } from "@nostr-dev-kit/ndk";
-import NDK from "@nostr-dev-kit/ndk";
+import { Hexpubkey, NDKArticle, NDKDraft, NDKKind } from "@nostr-dev-kit/ndk-hooks";
+import NDK from "@nostr-dev-kit/ndk-hooks";
 
 /**
  * Merge two arrays of NDKArticle, deduplicating by tagId() and keeping the one with the highest created_at.

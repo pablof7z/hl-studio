@@ -1,11 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { useEditorStore } from "../../stores"
 
-export function SettingsSidebar() {
-    const { activeSettingsTab, setActiveSettingsTab } = useEditorStore()
+export interface SettingsSidebarProps {
+    activeSettingsTab: 'metadata' | 'monetization'
+    setActiveSettingsTab: (tab: 'metadata' | 'monetization') => void
+}
 
+export function SettingsSidebar({ activeSettingsTab, setActiveSettingsTab }: SettingsSidebarProps) {
     return (
         <div className="w-48 border-r h-full">
             <div className="py-4">
