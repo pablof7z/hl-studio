@@ -18,11 +18,11 @@ import { useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks";
 import UserAvatar from "@/features/nostr/components/user/UserAvatar";
 
 const navigationItems = [
-  { name: "Dashboard", path: "/dashboard" },
-  { name: "Posts", path: "/dashboard/posts" },
-  { name: "Subscribers", path: "/dashboard/subscribers" },
-  { name: "Recommendations", path: "/dashboard/recommendations" },
-  { name: "Settings", path: "/dashboard/settings" },
+  { name: "Dashboard", path: "/" },
+  { name: "Posts", path: "/posts" },
+  { name: "Subscribers", path: "/subscribers" },
+  { name: "Recommendations", path: "/recommendations" },
+  { name: "Settings", path: "/settings" },
 ];
 
 export function Navigation() {
@@ -37,7 +37,7 @@ export function Navigation() {
   useEffect(() => {
     const activeIndex = navigationItems.findIndex(
       (item) =>
-        pathname === item.path || (item.path !== "/dashboard" && pathname.startsWith(item.path + "/"))
+        pathname === item.path || (item.path !== "/" && pathname.startsWith(item.path + "/"))
     );
 
     const activeTab = tabRefs.current[activeIndex];

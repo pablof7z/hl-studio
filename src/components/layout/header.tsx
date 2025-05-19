@@ -39,12 +39,12 @@ export function Header() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href="/dashboard/profile" className="w-full">
+              <Link href="/profile" className="w-full">
                 Profile
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/dashboard/settings" className="w-full">
+              <Link href="/settings" className="w-full">
                 Settings
               </Link>
             </DropdownMenuItem>

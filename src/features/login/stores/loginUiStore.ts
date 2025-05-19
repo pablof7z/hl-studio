@@ -11,6 +11,9 @@ interface LoginUiState {
 export const useLoginUiStore = create<LoginUiState>((set) => ({
     activeMethod: null,
     error: null,
-    setActiveMethod: (method) => set({ activeMethod: method }),
+    setActiveMethod: (method) => {
+        console.log("Setting active method:", method); 
+        set({ activeMethod: method })
+    },
     setError: (error) => set({ error }),
 }));

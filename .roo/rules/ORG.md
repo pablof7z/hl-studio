@@ -17,6 +17,8 @@ There are **two axes**:
 
 > **Rule of thumb:** *If code is reused across screens, put it in **domain**; if it’s only useful for one flow, put it in **feature**.*
 
+> NEVER create files before they are actually needed, for example, don't create a types.ts file just because, or a stores dir. Only create parts of the structure that are actually needed.
+
 ### 1.1 Domain skeleton
 
 ```text

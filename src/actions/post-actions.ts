@@ -26,7 +26,7 @@ export async function importPosts(formData: FormData): Promise<ImportPostsResult
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // Simulate success
-    revalidatePath("/dashboard/posts")
+    revalidatePath("/posts")
 
     return {
       success: true,

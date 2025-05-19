@@ -21,32 +21,32 @@ export function SettingsSidebar({ className, items, ...props }: SidebarNavProps)
 
   const defaultItems = [
     {
-      href: "/dashboard/settings/publication",
+      href: "/settings/publication",
       title: "Publication",
       icon: <Settings className="mr-2 h-4 w-4" />,
     },
     {
-      href: "/dashboard/settings/payments",
+      href: "/settings/payments",
       title: "Payments",
       icon: <CreditCard className="mr-2 h-4 w-4" />,
     },
     {
-      href: "/dashboard/settings/team",
+      href: "/settings/team",
       title: "Team",
       icon: <Users className="mr-2 h-4 w-4" />,
     },
     {
-      href: "/dashboard/settings/email",
+      href: "/settings/email",
       title: "Email",
       icon: <Mail className="mr-2 h-4 w-4" />,
     },
     {
-      href: "/dashboard/settings/comments",
+      href: "/settings/comments",
       title: "Comments",
       icon: <MessageSquare className="mr-2 h-4 w-4" />,
     },
     {
-      href: "/dashboard/settings/advanced",
+      href: "/settings/advanced",
       title: "Advanced",
       icon: <Cog className="mr-2 h-4 w-4" />,
     },

@@ -131,10 +131,10 @@ export default function LongFormPostPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <header className="border-b">
-                <div className="container mx-auto flex items-center justify-between h-14 px-4">
+                <div className="mx-auto flex items-center justify-between h-14 px-4">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" asChild>
-                            <Link href="/dashboard/posts">
+                            <Link href="/posts">
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
                         </Button>
@@ -150,8 +150,8 @@ export default function LongFormPostPage() {
                         <Button variant="outline" size="sm">
                             Preview
                         </Button>
-                        <Button size="sm" onClick={() => setIsConfirmDialogOpen(true)}>
-                            {status === "Scheduled" && scheduledDateTime ? "Update Schedule" : "Publish"}
+                        <Button size="sm" className="px-6" onClick={() => setIsConfirmDialogOpen(true)}>
+                            Continue
                         </Button>
                     </div>
                 </div>

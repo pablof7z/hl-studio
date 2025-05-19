@@ -25,3 +25,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.tse2e-results
+.tenex.json
+.roo/mcp.json
+test-results/.last-run.json
+nohup.out

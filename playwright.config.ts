@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 export default defineConfig({
     testDir: './e2e',
@@ -12,7 +13,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'list',
     use: {
-        baseURL: 'http://localhost:3000',
+        baseURL: 'http://localhost:4001',
         trace: 'on-first-retry',
         headless: true,
         viewport: { width: 1280, height: 720 },
@@ -34,5 +35,5 @@ export default defineConfig({
         //     use: { ...devices['Desktop Safari'] }
         // }
     ],
-    outputDir: 'e2e-results/'
+    outputDir: 'e2e-results/',
 });

@@ -12,12 +12,15 @@ import { ImageIcon, Trash2, MoreHorizontal, MessageCircle, Repeat, Heart, BarCha
 import type { Post } from "./thread-editor"
 import { MentionList } from "@/components/editor/mention-list"
 import { mockUsers, type User } from "@/data/mock-users"
+import { useAccountStore } from "@/domains/account/stores/accountStore"
+import { useNDKCurrentPubkey, useProfileValue } from "@nostr-dev-kit/ndk-hooks"
+import UserAvatar from "@/features/nostr/components/user/UserAvatar"
+import UserName from "@/features/nostr/components/user/UserName"
 
 interface ThreadPostProps {
   post: Post
   index: number
   isActive: boolean
-  displayName: string
   username: string
   avatarUrl: string
   onContentChange: (content: string) => void
@@ -32,7 +35,6 @@ export function ThreadPost({
   post,
   index,
   isActive,
-  displayName,
   username,
   avatarUrl,
   onContentChange,
@@ -49,6 +51,8 @@ export function ThreadPost({
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 })
   const [cursorPosition, setCursorPosition] = useState(0)
   const mentionListRef = useRef<HTMLDivElement>(null)
+  const currentPubkey = useNDKCurrentPubkey();
+  const profile = useProfileValue(currentPubkey);
 
   useEffect(() => {
     if (isActive && textareaRef.current) {
@@ -179,23 +183,22 @@ export function ThreadPost({
   return (
     <div
       className={`relative mb-4 rounded-lg p-4 transition-all ${
-        isActive ? "border-2 border-primary bg-background" : "border border-border bg-background/50"
+        isActive ? "bg-background" : "bg-background/50"
       }`}
       onClick={onFocus}
     >
       <div className="flex gap-3">
         <div className="flex flex-col items-center">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={displayName} />
-            <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar pubkey={currentPubkey} size="sm" />
           {!isLast && <div className="my-1 h-full w-0.5 bg-border" />}
         </div>
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <span className="font-semibold">{displayName}</span>
+              <span className="font-semibold">
+                <UserName pubkey={currentPubkey} />
+              </span>
               <span className="text-sm text-muted-foreground">@{username}</span>
             </div>
             <DropdownMenu>
@@ -267,7 +270,6 @@ export function ThreadPost({
             </div>
           )}
 
-          {isActive && (
             <div className="mt-2 flex items-center gap-2 text-muted-foreground">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleImageUpload}>
                 <ImageIcon className="h-4 w-4" />
@@ -278,36 +280,8 @@ export function ThreadPost({
                 <span>280</span>
               </div>
             </div>
-          )}
-
-          {isFirst && (
-            <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MessageCircle className="h-3.5 w-3.5" />
-                <span>0</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Repeat className="h-3.5 w-3.5" />
-                <span>0</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Heart className="h-3.5 w-3.5" />
-                <span>0</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <BarChart2 className="h-3.5 w-3.5" />
-                <span>0</span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-
-      {isActive && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">
-          #{index + 1}
-        </div>
-      )}
     </div>
   )
 }

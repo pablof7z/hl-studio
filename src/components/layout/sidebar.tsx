@@ -13,47 +13,47 @@ export function Sidebar() {
   const routes = [
     {
       title: "Dashboard",
-      href: "/dashboard",
+      href: "/",
       icon: Home,
     },
     {
       title: "Posts",
-      href: "/dashboard/posts",
+      href: "/posts",
       icon: FileText,
     },
     {
       title: "Schedule",
-      href: "/dashboard/schedule",
+      href: "/schedule",
       icon: Calendar,
     },
     {
       title: "Subscribers",
-      href: "/dashboard/subscribers",
+      href: "/subscribers",
       icon: Users,
     },
     {
       title: "Analytics",
-      href: "/dashboard/analytics",
+      href: "/analytics",
       icon: BarChart2,
     },
     {
       title: "Recommendations",
-      href: "/dashboard/recommendations",
+      href: "/recommendations",
       icon: ThumbsUp,
     },
     {
       title: "Publications",
-      href: "/dashboard/publications",
+      href: "/publications",
       icon: BookOpen,
     },
     {
       title: "Monetization",
-      href: "/dashboard/monetization",
+      href: "/monetization",
       icon: Zap,
     },
     {
       title: "Settings",
-      href: "/dashboard/settings",
+      href: "/settings",
       icon: Settings,
     },
   ]

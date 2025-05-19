@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { injectTestPrivKey, TEST_PRIVKEY } from './utils/ndk-auth';
+import { injectTestPrivKey, TEST_NSEC } from './utils/ndk-auth';
 
 // Helper function to log page content for debugging
 async function logPageState(page: Page, label: string) {
@@ -56,11 +56,8 @@ test.describe('Login Flow', () => {
     test('should log in with the test private key', async ({ page }) => {
         test.setTimeout(60000); // Increase test timeout for debugging
         
-        // Inject the test privkey before page load
-        await injectTestPrivKey(page);
-
         // Go to the login page (adjust path if needed)
-        await page.goto('/login');
+        await page.goto('/');
         console.log('Navigated to login page');
         
         // Initial page state logging
@@ -69,7 +66,7 @@ test.describe('Login Flow', () => {
         // Find and click the nsec login button with better error handling
         const nsecButton = page.getByRole('button', { name: /nsec/i });
         console.log('Looking for nsec button');
-        await expect(nsecButton).toBeVisible({ timeout: 10000 });
+        await expect(nsecButton).toBeVisible({ timeout: 1000 });
         console.log('Found nsec button, clicking it');
         await nsecButton.click();
         console.log('Clicked nsec button');
@@ -84,7 +81,7 @@ test.describe('Login Flow', () => {
         
         try {
             // First try to wait for a form
-            await page.waitForSelector('form', { timeout: 8000, state: 'visible' });
+            await page.waitForSelector('form', { timeout: 1000, state: 'visible' });
             formFound = true;
             console.log('Form found');
         } catch (e) {
@@ -106,9 +103,9 @@ test.describe('Login Flow', () => {
         const nsecInput = page.getByPlaceholder('Enter your nsec...');
         
         try {
-            await expect(nsecInput).toBeVisible({ timeout: 15000 }); // Increased timeout
+            await expect(nsecInput).toBeVisible({ timeout: 1000 }); // Increased timeout
             console.log('Nsec input found and visible, filling it');
-            await nsecInput.fill(TEST_PRIVKEY);
+            await nsecInput.fill(TEST_NSEC);
             console.log('Filled nsec input');
         } catch (error) {
             console.error('Failed to find or fill nsec input:', error);
@@ -168,30 +165,8 @@ test.describe('Login Flow', () => {
         // Capture all text on the page for debugging
         const pageText = await page.locator('body').textContent();
         console.log('Page text includes:', pageText?.substring(0, 500) + '...');
-        
-        // Try to detect any welcome/success elements
-        const possibleSuccessSelectors = [
-            page.getByText(/dashboard/i),
-            page.getByText(/welcome/i),
-            page.getByText(/logged in/i),
-            page.getByText(/nostr id:/i),
-            page.getByText(/npub/i)
-        ];
-        
-        let loginSuccessful = false;
-        
-        for (const selector of possibleSuccessSelectors) {
-            if (await selector.isVisible({ timeout: 2000 }).catch(() => false)) {
-                const text = await selector.textContent();
-                console.log(`Login successful! Found text: "${text}"`);
-                loginSuccessful = true;
-                break;
-            }
-        }
-        
-        // Assert that the login was successful
-        expect(loginSuccessful, 'Login was not successful').toBeTruthy();
-        
-        console.log('Test completed successfully');
+
+        const dashboardButton = page.getByText('Settings');
+        await expect(dashboardButton).toBeVisible({ timeout: 2500 });
     });
 });

@@ -23,7 +23,7 @@ export async function addRecommendation({ publicationId, reason }: AddRecommenda
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Revalidate the recommendations page
-    revalidatePath("/dashboard/recommendations")
+    revalidatePath("/recommendations")
 
     return { success: true }
   } catch (error) {
@@ -43,7 +43,7 @@ export async function removeRecommendation({ recommendationId }: RemoveRecommend
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Revalidate the recommendations page
-    revalidatePath("/dashboard/recommendations")
+    revalidatePath("/recommendations")
 
     return { success: true }
   } catch (error) {

@@ -24,7 +24,6 @@ export function TimePickerDemo({ value: initialValue = "09:00", onChange }: Time
 
     return (
         <div className="space-y-1">
-            <Label htmlFor="time-picker" className="text-sm">Time</Label>
             <Input
                 id="time-picker"
                 type="time"

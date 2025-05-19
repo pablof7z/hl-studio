@@ -17,7 +17,7 @@ export default function PostsPage() {
     <DashboardShell>
       <DashboardHeader heading="Posts" text="Manage your content on Highlighter">
         <Button variant="outline" asChild>
-          <Link href="/dashboard/posts/import-export">
+          <Link href="/posts/import-export">
             <Upload className="mr-2 h-4 w-4" />
             Import/Export
           </Link>

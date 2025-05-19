@@ -22,9 +22,6 @@ export function SettingsModal() {
                 if (!open) closeSettingsModal()
             }}>
                 <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden">
-                    <DialogHeader className="px-6 pt-6">
-                        <DialogTitle>Article Settings</DialogTitle>
-                    </DialogHeader>
                     <div className="flex h-[500px]">
                         <SettingsSidebar />
                         <div className="flex-1 p-6 overflow-y-auto">

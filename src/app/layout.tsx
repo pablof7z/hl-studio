@@ -4,6 +4,7 @@ import './globals.css';
 
 import { AuthGate } from '@/components/AuthGate';
 import { useArticlesStore } from '@/domains/articles';
+import { getRelayUrls } from '@/ndk';
 import { NDKHeadless, NDKSessionLocalStorage, useNDK, useNDKCurrentPubkey } from '@nostr-dev-kit/ndk-hooks';
 import { useEffect, useRef } from 'react';
 
@@ -28,7 +29,7 @@ export default function RootLayout({
             <body>
                 <NDKHeadless
                     ndk={{
-                        explicitRelayUrls: [ 'wss://relay.primal.net', 'wss://purplepag.es', 'wss://relay.nostr.band', 'wss://relay.damus.io' ],
+                        explicitRelayUrls: getRelayUrls(),
                     }}
                     session={{
                         storage: sessionStorage.current,
