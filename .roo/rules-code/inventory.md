@@ -23,6 +23,10 @@
     - api/
         - me/
             - route.ts
+        - posts/
+            - [id]/
+                - route.ts
+            - route.ts
     - dashboard/
         - layout.tsx
         - page.tsx
@@ -144,6 +148,15 @@
             - useNip07Login.ts
             - useNostrConnectLogin.ts
             - useNsecLogin.ts
+    - db/
+        - schema.ts
+    - schedule/
+        - db/
+            - create-post.ts
+            - delete-post.ts
+            - get-user-posts.ts
+            - index.ts
+            - update-post-status.ts
 - features/
     - dashboard/
         - index.ts

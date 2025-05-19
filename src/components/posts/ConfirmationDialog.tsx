@@ -7,13 +7,13 @@ import { CalendarIcon, Edit, ImageIcon, X } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Popover, PopoverPortal, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -32,6 +32,9 @@ export interface ConfirmationDialogCallbackData {
     scheduledAt?: Date; // Present if scheduling
 }
 
+/**
+ * If onPublish/onSchedule are not provided, the dialog will POST to /api/posts using useAPI and update SWR.
+ */
 export interface ConfirmationDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -43,9 +46,12 @@ export interface ConfirmationDialogProps {
         publicationName: string;
     };
     hasPaidPlan?: boolean;
-    onPublish: (data: ConfirmationDialogCallbackData) => void;
-    onSchedule: (data: ConfirmationDialogCallbackData) => void;
+    onPublish?: (data: ConfirmationDialogCallbackData) => void;
+    onSchedule?: (data: ConfirmationDialogCallbackData) => void;
 }
+
+import { useAPI } from "@/domains/api/hooks/useAPI";
+import { useCallback } from "react";
 
 export function ConfirmationDialog({
     open,
@@ -65,7 +71,42 @@ export function ConfirmationDialog({
     const [isScheduled, setIsScheduled] = useState(false)
     const [audience, setAudience] = useState<"all" | "subscribers">("all")
     const [isEditing, setIsEditing] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [submitting, setSubmitting] = useState(false)
     const currentPubkey = useNDKCurrentPubkey();
+
+    // Backend API integration
+    const api = useAPI();
+    const { mutate } = api.get("/api/posts");
+
+    // Helper to actually schedule/publish via backend if no prop provided
+    const backendSchedule = useCallback(
+        async (data: ConfirmationDialogCallbackData) => {
+            setSubmitting(true);
+            setError(null);
+            try {
+                const payload: Record<string, any> = {
+                    content: data.summary, // or data.title + data.summary? (adjust as needed)
+                    title: data.title,
+                    summary: data.summary,
+                    tags: data.tags,
+                    heroImage: data.heroImage,
+                    audience: data.audience,
+                };
+                if (data.scheduledAt) {
+                    payload.scheduledAt = data.scheduledAt.toISOString();
+                }
+                await api.post("/api/posts", payload);
+                mutate();
+                onOpenChange(false);
+            } catch (err: any) {
+                setError(err?.message || "Failed to schedule post.");
+            } finally {
+                setSubmitting(false);
+            }
+        },
+        [api, mutate, onOpenChange]
+    );
 
     useEffect(() => {
         if (open) {
@@ -104,7 +145,8 @@ export function ConfirmationDialog({
         }
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        setError(null);
         const callbackData: Omit<ConfirmationDialogCallbackData, "scheduledAt"> = {
             title: currentTitle,
             summary: currentSummary,
@@ -118,16 +160,25 @@ export function ConfirmationDialog({
                 const scheduleDateTime = new Date(date);
                 const [hours, minutes] = time.split(':').map(Number);
                 scheduleDateTime.setHours(hours, minutes, 0, 0);
-                onSchedule({ ...callbackData, scheduledAt: scheduleDateTime });
+                const data = { ...callbackData, scheduledAt: scheduleDateTime };
+                if (onSchedule) {
+                    onSchedule(data);
+                    onOpenChange(false);
+                } else {
+                    await backendSchedule(data);
+                }
             } else {
-                // TODO: Add user-facing error handling (e.g., a toast notification)
-                console.error("Date and time must be set for scheduling.");
-                return; // Prevent closing dialog or submitting
+                setError("Date and time must be set for scheduling.");
+                return;
             }
         } else {
-            onPublish(callbackData); // scheduledAt will be undefined implicitly
+            if (onPublish) {
+                onPublish(callbackData);
+                onOpenChange(false);
+            } else {
+                await backendSchedule(callbackData as ConfirmationDialogCallbackData);
+            }
         }
-        onOpenChange(false);
     };
 
     return (
@@ -136,7 +187,9 @@ export function ConfirmationDialog({
                 <DialogHeader>
                     <DialogTitle className="text-xl">Publish Article</DialogTitle>
                 </DialogHeader>
-
+                {error && (
+                    <div className="mb-2 text-sm text-red-600">{error}</div>
+                )}
                 <div className="grid gap-6 py-4">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -157,8 +210,8 @@ export function ConfirmationDialog({
                                 <div className="flex gap-4">
                                     <div className="flex-1 space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <UserAvatar pubkey={currentPubkey} size={"xs"} />
-                                            <span className="text-sm font-medium"><UserName pubkey={currentPubkey} /></span>
+                                            <UserAvatar pubkey={currentPubkey ?? ""} size={"xs"} />
+                                            <span className="text-sm font-medium"><UserName pubkey={currentPubkey ?? ""} /></span>
                                         </div>
 
                                         {isEditing ? (
@@ -289,8 +342,8 @@ export function ConfirmationDialog({
 
                                         {isScheduled && (
                                             <div className="flex flex-col sm:flex-row gap-2">
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
+                                                <Dialog>
+                                                    <DialogTrigger>
                                                         <Button
                                                             variant="outline"
                                                             className="w-full sm:w-[240px] justify-start text-left font-normal"
@@ -298,8 +351,8 @@ export function ConfirmationDialog({
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                                             {date ? format(date, "PPP") : <span>Pick a date</span>}
                                                         </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
+                                                    </DialogTrigger>
+                                                    <DialogContent className="w-auto p-0 z-[500]">
                                                         <Calendar
                                                             mode="single"
                                                             selected={date}
@@ -307,8 +360,8 @@ export function ConfirmationDialog({
                                                             initialFocus
                                                             disabled={(d) => d < new Date(new Date().setDate(new Date().getDate() -1))} // Allow today
                                                         />
-                                                    </PopoverContent>
-                                                </Popover>
+                                                    </DialogContent>
+                                                </Dialog>
                                                 <TimePickerDemo value={time} onChange={setTime} />
                                             </div>
                                         )}
@@ -363,7 +416,14 @@ export function ConfirmationDialog({
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit}>{isScheduled ? "Schedule" : "Publish"} Article</Button>
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                    >
+                        {submitting
+                            ? (isScheduled ? "Scheduling..." : "Publishing...")
+                            : (isScheduled ? "Schedule" : "Publish") + " Article"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

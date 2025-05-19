@@ -19,9 +19,6 @@ export interface Post {
 export function ThreadEditor() {
   const [posts, setPosts] = useState<Post[]>([{ id: "1", content: "", images: [] }])
   const [activePostId, setActivePostId] = useState<string>("1")
-  const [username] = useState<string>("YourHandle")
-  const [displayName] = useState<string>("Your Name")
-  const [avatarUrl] = useState<string>("/diverse-avatars.png")
   const [scheduleSettings, setScheduleSettings] = useState<ScheduleSettings | null>(null)
 
   const addPost = () => {
@@ -78,10 +75,6 @@ export function ThreadEditor() {
             </Tabs>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <ImageIcon className="mr-2 h-4 w-4" />
-              Add Cover
-            </Button>
             <PostScheduleDialog
               onSchedule={handleSchedule}
               postType="thread"
@@ -110,9 +103,6 @@ export function ThreadEditor() {
                 post={post}
                 index={index}
                 isActive={post.id === activePostId}
-                displayName={displayName}
-                username={username}
-                avatarUrl={avatarUrl}
                 onContentChange={(content) => updatePost(post.id, content)}
                 onAddImage={(imageUrl) => addImageToPost(post.id, imageUrl)}
                 onRemove={() => removePost(post.id)}

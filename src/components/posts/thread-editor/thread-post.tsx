@@ -21,8 +21,6 @@ interface ThreadPostProps {
   post: Post
   index: number
   isActive: boolean
-  username: string
-  avatarUrl: string
   onContentChange: (content: string) => void
   onAddImage: (imageUrl: string) => void
   onRemove: () => void
@@ -35,8 +33,6 @@ export function ThreadPost({
   post,
   index,
   isActive,
-  username,
-  avatarUrl,
   onContentChange,
   onAddImage,
   onRemove,
@@ -199,7 +195,6 @@ export function ThreadPost({
               <span className="font-semibold">
                 <UserName pubkey={currentPubkey} />
               </span>
-              <span className="text-sm text-muted-foreground">@{username}</span>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

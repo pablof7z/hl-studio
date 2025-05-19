@@ -16,15 +16,19 @@ export async function validateNip98Auth(req: NextRequest) {
         };
     }
 
+    let payload: string | undefined = undefined;
+    let json: any = undefined;
+
     try {
         // Extract and decode the base64 event
         const base64Event = authHeader.substring(6); // Remove 'Nostr ' prefix
         const eventJSON = atob(base64Event);
         const eventData = JSON.parse(eventJSON);
-        
+        console.log('Decoded event data:', eventData);
+
         // Create NDKEvent from the raw event data
         const event = new NDKEvent(undefined, eventData);
-        
+
         // Validate event kind
         if (event.kind !== 27235) {
             return {
@@ -33,7 +37,7 @@ export async function validateNip98Auth(req: NextRequest) {
                 status: 401
             };
         }
-        
+
         // Validate timestamp (within 60 seconds)
         const now = Math.floor(Date.now() / 1000);
         if (Math.abs(now - event.created_at) > 60) {
@@ -43,7 +47,7 @@ export async function validateNip98Auth(req: NextRequest) {
                 status: 401
             };
         }
-        
+
         // Validate URL
         const urlTag = event.tags.find(tag => tag[0] === 'u');
         if (!urlTag) {
@@ -53,13 +57,13 @@ export async function validateNip98Auth(req: NextRequest) {
                 status: 401
             };
         }
-        
+
         const requestUrl = new URL(req.url);
         const tagUrl = new URL(urlTag[1]);
-        
+
         // Compare URLs (ignoring protocol differences between http/https in development)
         if (
-            tagUrl.pathname !== requestUrl.pathname || 
+            tagUrl.pathname !== requestUrl.pathname ||
             tagUrl.search !== requestUrl.search
         ) {
             return {
@@ -68,7 +72,7 @@ export async function validateNip98Auth(req: NextRequest) {
                 status: 401
             };
         }
-        
+
         // Validate method
         const methodTag = event.tags.find(tag => tag[0] === 'method');
         if (!methodTag) {
@@ -78,7 +82,7 @@ export async function validateNip98Auth(req: NextRequest) {
                 status: 401
             };
         }
-        
+
         if (methodTag[1] !== req.method) {
             return {
                 valid: false,
@@ -86,44 +90,59 @@ export async function validateNip98Auth(req: NextRequest) {
                 status: 401
             };
         }
-        
-        // Validate payload hash if present (for POST/PUT/PATCH)
+
+        // For POST/PUT/PATCH, always read the body and try to parse as JSON
         if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+            payload = await req.text();
+
+            // Try to parse as JSON
+            try {
+                json = JSON.parse(payload);
+            } catch {
+                // Not valid JSON, leave json as undefined
+            }
+
+            // Validate payload hash if present
             const payloadTag = event.tags.find(tag => tag[0] === 'payload');
-            
             if (payloadTag) {
-                const body = await req.text();
                 const encoder = new TextEncoder();
-                const data = encoder.encode(body);
+                const data = encoder.encode(payload);
                 const hashBuffer = await crypto.subtle.digest('SHA-256', data);
                 const hashArray = Array.from(new Uint8Array(hashBuffer));
                 const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                
+
                 if (payloadTag[1] !== hashHex) {
                     return {
                         valid: false,
                         error: 'Payload hash mismatch',
-                        status: 401
+                        status: 401,
+                        payload,
+                        json
                     };
                 }
             }
         }
-        
+
         // Verify signature
         const isSignatureValid = await event.verifySignature(true);
         if (!isSignatureValid) {
             return {
                 valid: false,
                 error: 'Invalid signature',
-                status: 401
+                status: 401,
+                payload,
+                json
             };
         }
-        
+
         // All validations passed
-        return {
+        const result: any = {
             valid: true,
             pubkey: event.pubkey
         };
+        if (payload !== undefined) result.payload = payload;
+        if (json !== undefined) result.json = json;
+        return result;
     } catch (error) {
         console.error('Error validating NIP-98 auth:', error);
         return {

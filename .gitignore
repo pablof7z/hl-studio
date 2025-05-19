@@ -29,3 +29,4 @@ next-env.d.tse2e-results
 .roo/mcp.json
 test-results/.last-run.json
 nohup.out
+.repomix-output.txt
