@@ -13,6 +13,13 @@ export const createEditorActions: StateCreator<
     setTitle: (title) => set({ title }),
     setSummary: (summary) => set({ summary }),
     setTags: (tags) => set({ tags }),
+    
+    addTag: (tag) => {
+        const { tags } = get();
+        // If tag is a string, convert it to a ["t", tag] format
+        const newTag = typeof tag === 'string' ? ['t', tag] : tag;
+        set({ tags: [...tags, newTag] });
+    },
     setPublishedAt: (date) => set({ publishedAt: date }),
     
     // Monetization actions
@@ -55,7 +62,8 @@ export const createEditorActions: StateCreator<
         article.title = title;
         article.summary = summary;
         article.image = image ?? undefined;
-        article.tags = tags.map(tag => ['t', tag]);
+        // Use tags directly since they're already in NDKTag format
+        article.tags = [...tags];
         if (publisheTimestamp) article.created_at = publisheTimestamp;
         article.published_at = publisheTimestamp;
         article.tags.push(

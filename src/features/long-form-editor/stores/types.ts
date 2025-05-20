@@ -12,7 +12,7 @@ export interface EditorState {
     summary: string;
     
     // Metadata
-    tags: string[];
+    tags: string[][];  // NDKTag[] - array of arrays where each inner array is a tag
     publishedAt: Date | null;
     image: string | null;
     
@@ -25,7 +25,8 @@ export interface EditorActions {
     setContent: (content: string) => void;
     setTitle: (title: string) => void;
     setSummary: (summary: string) => void;
-    setTags: (tags: string[]) => void;
+    setTags: (tags: string[][]) => void;
+    addTag: (tag: string | string[]) => void;
     setPublishedAt: (date: Date | null) => void;
     
     // Monetization actions

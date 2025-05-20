@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { NostrEditor } from "@/components/editor/nostr-editor"
 import { ScheduleIndicator, type ScheduleIndicatorSettings } from "@/components/posts/schedule-indicator"
-import { useEvent } from "@nostr-dev-kit/ndk-hooks"
+import { NDKUser, useEvent } from "@nostr-dev-kit/ndk-hooks"
 import { NDKKind, NDKArticle } from "@nostr-dev-kit/ndk-hooks"
 import { SettingsModal, useEditorStore, useEditorPublish } from "@/features/long-form-editor"
 import { ConfirmationDialog } from "@/components/posts/ConfirmationDialog"; // Updated import
@@ -27,6 +27,7 @@ export default function LongFormPostPage() {
         title,
         setTitle,
         setSummary,
+        addZapSplit,
         setTags,
         setPublishedAt,
         getEvents,
@@ -42,7 +43,6 @@ export default function LongFormPostPage() {
     const [status, setStatus] = useState("Draft");
     const [scheduledDateTime, setScheduledDateTime] = useState<Date | null>(null);
     const api = useAPI();
-    const { mutate } = api.get("/api/posts");
 
     // Use the useEvent hook from ndk-hooks to fetch the event by encoded ID
     const event = useEvent(encodedId || false);
@@ -55,7 +55,13 @@ export default function LongFormPostPage() {
                 setContent(article.content ?? "");
                 setTitle(article.title ?? "");
                 setSummary(article.summary ?? "");
-                setTags(article.getMatchingTags("t").map(t => t[1]) || []);
+                const zapSplits = article.tags.filter(tag => tag[0] === "zap");
+                zapSplits.forEach(tag => {
+                    const user = new NDKUser({ pubkey: tag[1] });
+                    const split = parseInt(tag[2], 10);
+                    addZapSplit(user, split);
+                });
+                setTags(article.tags || []);
                 if (article.published_at) {
                     setPublishedAt(new Date(article.published_at * 1000));
                     setStatus("Published") // Or determine based on date

@@ -39,8 +39,6 @@ Several editor-related components exist, potentially with overlapping responsibi
 *   `src/components/posts/thread-editor/thread-editor.tsx`: A page-level component for creating threads, uses `ThreadPost.tsx`.
 *   `src/components/posts/thread-editor/thread-post.tsx`: Component for an individual post within a thread, includes a `Textarea` with mention support.
 
-The `NostrEditor` in `src/components/editor/nostr-editor.tsx` defines an inline `NAddrNodeView` which seems to be a simplified version of `src/components/editor/NAddrEditor.tsx`.
-
 ### Proposed Solution:
 
 **Decision Point: Editor Strategy**
@@ -49,7 +47,6 @@ Choose one of the following approaches for editor components:
 
 *   **Option A: Centralize around `NostrEditor`**
     *   **Task:** Refactor `NostrEditor` to be the primary rich text editor.
-    *   Replace the inline `NAddrNodeView` in `nostr-editor.tsx` with the more complete `src/components/editor/NAddrEditor.tsx`.
     *   Adapt `NostrEditor` to be usable by `src/app/editor/post/page.tsx` (LongFormPostPage) and potentially for `ThreadPost` if rich text is desired there.
     *   `PostEditor.tsx` might become a wrapper around `NostrEditor` or be deprecated if `LongFormPostPage` directly uses `NostrEditor`.
     *   `ThreadPost.tsx`'s textarea could be replaced by a simplified `NostrEditor` instance if rich text capabilities are needed, or its mention logic could be harmonized with `NostrEditor`'s mention extension.
@@ -60,14 +57,8 @@ Choose one of the following approaches for editor components:
     *   `NostrEditor` would remain the full-featured editor.
     *   `PostEditor` and `ThreadPost` would use simpler Tiptap instances, but could import specific shared extensions/NodeViews if needed. This might be suitable if `ThreadPost` needs only basic text and mentions, not full rich text.
 
-**Specific Task (Regardless of A or B):**
-1.  Resolve the `NAddrNodeView` duplication:
-    *   Remove the inline `NAddrNodeView` from `src/components/editor/nostr-editor.tsx`.
-    *   Ensure `NostrEditor` uses the `src/components/editor/NAddrEditor.tsx` component as its NodeViewRenderer for `naddr` entities.
-
 **Files to check/modify:**
 *   `src/components/editor/nostr-editor.tsx`
-*   `src/components/editor/NAddrEditor.tsx`
 *   `src/app/editor/post/page.tsx`
 *   `src/components/posts/post-editor.tsx`
 *   `src/components/posts/thread-editor/thread-editor.tsx`
