@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 export function useFeedFilters() {
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState('');
     const [kind, setKind] = useState<number | null>(null);
 
     return {

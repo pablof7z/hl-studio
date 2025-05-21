@@ -1,22 +1,15 @@
-import React from "react";
-import { NDKEvent } from "@nostr-dev-kit/ndk";
-import { useProfileValue } from "@nostr-dev-kit/ndk-hooks";
+import { NDKEvent } from '@nostr-dev-kit/ndk';
+import { useProfileValue } from '@nostr-dev-kit/ndk-hooks';
+import React from 'react';
 
 interface MentionSearchResultsEventProps {
     event: NDKEvent | null | undefined;
     onSelectEvent: (event: NDKEvent) => void;
 }
 
-export const MentionSearchResultsEvent: React.FC<MentionSearchResultsEventProps> = ({
-    event,
-    onSelectEvent
-}) => {
+export const MentionSearchResultsEvent: React.FC<MentionSearchResultsEventProps> = ({ event, onSelectEvent }) => {
     if (!event) {
-        return (
-            <div className="p-4 text-center text-muted-foreground">
-                No event found
-            </div>
-        );
+        return <div className="p-4 text-center text-muted-foreground">No event found</div>;
     }
 
     const profile = useProfileValue(event.pubkey);
@@ -30,16 +23,12 @@ export const MentionSearchResultsEvent: React.FC<MentionSearchResultsEventProps>
                 data-testid="mention-event-result"
             >
                 <div className="flex items-center mb-1">
-                    <div className="text-sm font-medium">
-                        Event
-                    </div>
+                    <div className="text-sm font-medium">Event</div>
                     <div className="text-xs text-muted-foreground ml-2">
                         by {profile?.displayName || profile?.name || event.pubkey.slice(0, 8)}
                     </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                    {summary || 'No content'}
-                </div>
+                <div className="text-sm text-muted-foreground">{summary || 'No content'}</div>
             </div>
         </div>
     );

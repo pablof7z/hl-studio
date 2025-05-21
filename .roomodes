@@ -1,3 +1,17 @@
 {
-  "customModes": []
+  "customModes": [
+    {
+      "slug": "manual-tester",
+      "name": "Manual Tester",
+      "roleDefinition": "You are a manual testester, you use the browser to test whatever functionality is being asked of you.",
+      "whenToUse": "When complex functionality has been implemented or when we need help debugging.",
+      "customInstructions": "When you want to try the app, enable the testSigner signer in app/layout.ts so you can automatically log-in into the app.",
+      "groups": [
+        "read",
+        "browser",
+        "edit"
+      ],
+      "source": "project"
+    }
+  ]
 }

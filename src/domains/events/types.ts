@@ -1,6 +1,6 @@
-import { NDKEvent } from "@nostr-dev-kit/ndk";
+import { NDKEvent } from '@nostr-dev-kit/ndk';
 
-export type NostrIdentifierType = "npub" | "note" | "nevent" | "naddr" | "nprofile" | "unknown";
+export type NostrIdentifierType = 'npub' | 'note' | 'nevent' | 'naddr' | 'nprofile' | 'unknown';
 
 export interface NostrEventSearchResult {
     event: NDKEvent | null;

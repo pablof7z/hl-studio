@@ -1,6 +1,6 @@
-import { useCallback } from "react";
-import { useNDKSessionLogin } from "@nostr-dev-kit/ndk-hooks";
-import { NDKNip07Signer } from "@nostr-dev-kit/ndk";
+import { NDKNip07Signer } from '@nostr-dev-kit/ndk';
+import { useNDKSessionLogin } from '@nostr-dev-kit/ndk-hooks';
+import { useCallback } from 'react';
 
 /**
  * Returns a callback to trigger NIP-07 browser extension login.

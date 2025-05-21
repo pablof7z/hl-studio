@@ -171,7 +171,7 @@
     padding: 2px 4px;
 }
 /* Dark mode overrides for longform editor */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
     .longform-content {
         color: #eaeaea;
         background: transparent;
@@ -200,4 +200,4 @@
     .longform-content hr {
         background-color: #333;
     }
-}
+} */

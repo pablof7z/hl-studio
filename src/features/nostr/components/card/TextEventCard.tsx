@@ -1,15 +1,8 @@
-import { NostrEventCardProps } from ".";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-  } from "@/components/ui/card";  
-import { NostrEventCardHeader } from "./NostrEventCardHeader";
-import { NostrEventCardFooter } from "./NostrEventCardFooter";
-import { TextEvent } from "@/features/nostr/components/event/TextEvent";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { TextEvent } from '@/features/nostr/components/event/TextEvent';
+import { NostrEventCardProps } from '.';
+import { NostrEventCardFooter } from './NostrEventCardFooter';
+import { NostrEventCardHeader } from './NostrEventCardHeader';
 
 export function TextEventCard({ event }: NostrEventCardProps) {
     return (

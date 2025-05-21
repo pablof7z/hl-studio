@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
 type DeleteButtonProps = {
     onClick: () => void;
     className?: string;
 };
 
-export function DeleteButton({ onClick, className = "" }: DeleteButtonProps) {
+export function DeleteButton({ onClick, className = '' }: DeleteButtonProps) {
     return (
         <button
             type="button"
@@ -15,7 +15,7 @@ export function DeleteButton({ onClick, className = "" }: DeleteButtonProps) {
         >
             {/* Inline SVG X icon */}
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                <path d="M5 5l8 8M13 5l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M5 5l8 8M13 5l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
         </button>
     );

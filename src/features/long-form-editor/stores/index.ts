@@ -1,20 +1,20 @@
 import { create } from 'zustand';
-import { EditorStore, EditorState } from './types';
-import { createEditorActions } from './actions';
+import { createContentSlice, ContentSlice } from './slices/content';
+import { createMetadataSlice, MetadataSlice } from './slices/metadata';
+import { createZapsSlice, ZapsSlice } from './slices/zaps';
+import { createEventSlice, EventSlice } from './slices/event';
+import { createDraftSlice, DraftSlice } from './slices/draft';
 
-// Initial state
-const initialState: EditorState = {
-    content: '',
-    title: '',
-    summary: '',
-    tags: [],
-    publishedAt: null,
-    zapSplits: [],
-    image: null,
-};
+export type EditorStore = ContentSlice &
+    MetadataSlice &
+    ZapsSlice &
+    EventSlice &
+    DraftSlice;
 
-// Create the store
-export const useEditorStore = create<EditorStore>((set, get, store) => ({
-    ...initialState,
-    ...createEditorActions(set, get, store),
+export const useEditorStore = create<EditorStore>((...args) => ({
+    ...createContentSlice(...args),
+    ...createMetadataSlice(...args),
+    ...createZapsSlice(...args),
+    ...createEventSlice(...args),
+    ...createDraftSlice(...args),
 }));

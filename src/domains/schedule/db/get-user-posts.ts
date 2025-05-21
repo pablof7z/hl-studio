@@ -3,9 +3,9 @@
  * Uses Drizzle ORM for SQLite.
  */
 
-import { posts, PostStatus } from "@/domains/db/schema";
-import { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
-import { eq, and, desc } from "drizzle-orm";
+import { posts, PostStatus } from '@/domains/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
+import { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 
 /**
  * Query options for fetching user posts.
@@ -25,10 +25,7 @@ export interface GetUserPostsOptions {
  * @returns Array of post rows.
  * @throws Error if query fails.
  */
-export async function getUserPosts(
-    db: BunSQLiteDatabase,
-    options: GetUserPostsOptions
-) {
+export async function getUserPosts(db: BunSQLiteDatabase, options: GetUserPostsOptions) {
     try {
         // Build where conditions
         const whereClauses = [];
@@ -44,61 +41,42 @@ export async function getUserPosts(
 
         // Build query in a single deeply nested chain to avoid type errors
         return await (
-            (whereClauses.length > 0
-                ? (options.limit
-                    ? (options.offset
+            whereClauses.length > 0
+                ? options.limit
+                    ? options.offset
                         ? db
+                              .select()
+                              .from(posts)
+                              .where(and(...whereClauses))
+                              .limit(options.limit)
+                              .offset(options.offset)
+                        : db
+                              .select()
+                              .from(posts)
+                              .where(and(...whereClauses))
+                              .limit(options.limit)
+                    : options.offset
+                      ? db
                             .select()
                             .from(posts)
                             .where(and(...whereClauses))
-                            .limit(options.limit)
                             .offset(options.offset)
-                        : db
+                      : db
                             .select()
                             .from(posts)
                             .where(and(...whereClauses))
-                            .limit(options.limit)
-                    )
-                    : (options.offset
-                        ? db
-                            .select()
-                            .from(posts)
-                            .where(and(...whereClauses))
-                            .offset(options.offset)
-                        : db
-                            .select()
-                            .from(posts)
-                            .where(and(...whereClauses))
-                    )
-                )
-                : (options.limit
-                    ? (options.offset
-                        ? db
-                            .select()
-                            .from(posts)
-                            .limit(options.limit)
-                            .offset(options.offset)
-                        : db
-                            .select()
-                            .from(posts)
-                            .limit(options.limit)
-                    )
-                    : (options.offset
-                        ? db
-                            .select()
-                            .from(posts)
-                            .offset(options.offset)
-                        : db
-                            .select()
-                            .from(posts)
-                    )
-                )
-            )
+                : options.limit
+                  ? options.offset
+                      ? db.select().from(posts).limit(options.limit).offset(options.offset)
+                      : db.select().from(posts).limit(options.limit)
+                  : options.offset
+                    ? db.select().from(posts).offset(options.offset)
+                    : db.select().from(posts)
+        )
             .orderBy(desc(posts.scheduledAt), desc(posts.createdAt))
-            .all()
-        );
+            .all();
     } catch (err) {
-        throw new Error("Failed to fetch user posts: " + (err instanceof Error ? err.message : String(err)));
+        throw new Error('Failed to fetch user posts: ' + (err instanceof Error ? err.message : String(err)));
     }
 }
 
@@ -110,28 +88,16 @@ export async function getUserPosts(
  * @returns The post row if found and owned by the user, otherwise null.
  * @throws Error if query fails.
  */
-export async function getPostByIdForUser(
-    db: BunSQLiteDatabase,
-    id: string,
-    accountPubkey: string
-) {
+export async function getPostByIdForUser(db: BunSQLiteDatabase, id: string, accountPubkey: string) {
     try {
         const result = await db
             .select()
             .from(posts)
-            .where(
-                and(
-                    eq(posts.id, id),
-                    eq(posts.accountPubkey, accountPubkey)
-                )
-            )
+            .where(and(eq(posts.id, id), eq(posts.accountPubkey, accountPubkey)))
             .limit(1)
             .all();
         return result[0] ?? null;
     } catch (err) {
-        throw new Error(
-            "Failed to fetch post by id for user: " +
-                (err instanceof Error ? err.message : String(err))
-        );
+        throw new Error('Failed to fetch post by id for user: ' + (err instanceof Error ? err.message : String(err)));
     }
 }

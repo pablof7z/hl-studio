@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { useEditorStore } from "../../stores"
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useEditorStore } from '../../stores';
 
 export function MetadataSection() {
-    const { title, summary, setTitle, setSummary } = useEditorStore()
+    const { title, summary, setTitle, setSummary } = useEditorStore();
 
     return (
         <div className="space-y-6">
@@ -19,7 +19,7 @@ export function MetadataSection() {
                     onChange={(e) => setTitle(e.target.value)}
                 />
             </div>
-            
+
             <div className="space-y-2">
                 <Label htmlFor="summary">Summary</Label>
                 <Textarea
@@ -34,5 +34,5 @@ export function MetadataSection() {
                 </p>
             </div>
         </div>
-    )
+    );
 }

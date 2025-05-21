@@ -1,12 +1,23 @@
 'use client';
 
 import './globals.css';
-
 import { AuthGate } from '@/components/AuthGate';
 import { useArticlesStore } from '@/domains/articles';
+import { useDraftStore } from '@/features/drafts/stores';
+import { useEditorStore } from '@/features/long-form-editor';
 import { getRelayUrls } from '@/ndk';
-import { NDKHeadless, NDKSessionLocalStorage, useNDK, useNDKCurrentPubkey } from '@nostr-dev-kit/ndk-hooks';
+import {
+    NDKHeadless,
+    NDKPrivateKeySigner,
+    NDKSessionLocalStorage,
+    useNDK,
+    useNDKCurrentPubkey,
+    useNDKSessionLogin,
+} from '@nostr-dev-kit/ndk-hooks';
 import { useEffect, useRef } from 'react';
+
+const testSigner = new NDKPrivateKeySigner('nsec1gz92f7qu9ctxwdztzjramxmkg05say892r5thumarwyj3zde0edss0c9yt'); // MANUAL TESTER AGENT KEY ENABLED
+// const testSigner = null;
 
 export default function RootLayout({
     children,
@@ -15,15 +26,31 @@ export default function RootLayout({
 }>) {
     const sessionStorage = useRef(new NDKSessionLocalStorage());
     const currentPubkey = useNDKCurrentPubkey();
-    const articleStoreInit = useArticlesStore(s => s.init);
+    const articleStoreInit = useArticlesStore((s) => s.init);
+    const draftStoreInit = useDraftStore((s) => s.init);
+    const editorStoreInit = useEditorStore((s) => s.init);
     const { ndk } = useNDK();
+    const login = useNDKSessionLogin();
+
+    // If the manual tester mode is enabled, directly login into the app.
+    useEffect(() => {
+        if (testSigner) {
+            // login(testSigner);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (ndk) ndk.connect();
+    }, [ndk]);
 
     useEffect(() => {
         if (ndk && currentPubkey) {
             articleStoreInit(ndk, currentPubkey);
+            draftStoreInit(ndk, currentPubkey);
+            editorStoreInit(ndk);
         }
     }, [currentPubkey]);
-    
+
     return (
         <html lang="en">
             <body>
@@ -33,7 +60,7 @@ export default function RootLayout({
                     }}
                     session={{
                         storage: sessionStorage.current,
-                        opts: { follows: true, profile: true }
+                        opts: { follows: true, profile: true },
                     }}
                 />
                 <AuthGate>{children}</AuthGate>

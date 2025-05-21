@@ -1,7 +1,7 @@
-import { create } from 'zustand';
 import NDK, { Hexpubkey, NDKKind, NDKList, normalizeRelayUrl } from '@nostr-dev-kit/ndk';
-import { GroupEntry } from '.';
 import { useCallback, useMemo } from 'react';
+import { create } from 'zustand';
+import { GroupEntry } from '.';
 
 type PinnedGroupStore = {
     pinnedGroups: Record<Hexpubkey, NDKList>;
@@ -18,22 +18,24 @@ export const usePinnedGroupsStore = create<PinnedGroupStore & PinnedGroupActions
     listPinnedGroups: async (ndk: NDK, pubkeys: Hexpubkey[]) => {
         if (!ndk) throw new Error('NDK not initialized');
 
-        ndk.subscribe([
-            { kinds: [NDKKind.SimpleGroupList], authors: pubkeys },
-        ], { closeOnEose: true }, {
-            onEvent: (event) => {
-                const currentList = get().pinnedGroups[event.pubkey];
-                if (currentList?.created_at >= event.created_at) return;
+        ndk.subscribe(
+            [{ kinds: [NDKKind.SimpleGroupList], authors: pubkeys }],
+            { closeOnEose: true },
+            {
+                onEvent: (event) => {
+                    const currentList = get().pinnedGroups[event.pubkey];
+                    if (currentList?.created_at >= event.created_at) return;
 
-                const list = NDKList.from(event);
-                set((state) => ({
-                    pinnedGroups: {
-                        ...state.pinnedGroups,
-                        [event.pubkey]: list,
-                    }
-                }));
-            },
-        });
+                    const list = NDKList.from(event);
+                    set((state) => ({
+                        pinnedGroups: {
+                            ...state.pinnedGroups,
+                            [event.pubkey]: list,
+                        },
+                    }));
+                },
+            }
+        );
     },
 }));
 
@@ -42,7 +44,7 @@ export const usePinnedGroups = (pubkey: Hexpubkey | Hexpubkey[] | undefined) => 
 
     return useMemo(() => {
         if (!pinnedGroups || !pubkey) return [];
-        
+
         const pubkeys = Array.isArray(pubkey) ? pubkey : [pubkey];
         const groups = new Set<GroupEntry>();
 
@@ -60,4 +62,4 @@ export const usePinnedGroups = (pubkey: Hexpubkey | Hexpubkey[] | undefined) => 
 
         return Array.from(groups);
     }, [pinnedGroups, pubkey]);
-}
+};

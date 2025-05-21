@@ -1,4 +1,4 @@
-import { useLoginUiStore } from "../stores/loginUiStore";
+import { useLoginUiStore } from '../stores/loginUiStore';
 
 /**
  * Hook to access and control login UI state.

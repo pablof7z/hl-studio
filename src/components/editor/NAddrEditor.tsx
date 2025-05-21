@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { NodeViewWrapper } from "@tiptap/react";
-import { useNDK, useProfileValue, useSubscribe } from "@nostr-dev-kit/ndk-hooks";
-import { DeleteButton } from "@/components/ui/atoms/DeleteButton";
-import type { NodeViewProps } from "@tiptap/react";
+import { DeleteButton } from '@/components/ui/atoms/DeleteButton';
+import { useEvent, useNDK, useProfileValue, useSubscribe } from '@nostr-dev-kit/ndk-hooks';
+import { NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/react';
+import React from 'react';
 
 /**
  * NAddrEditor renders an naddr entity as a styled inline component.
@@ -16,7 +16,7 @@ function parseNaddr(naddr: string) {
     // naddr1... is bech32, but for simplicity, expect format: <kind>:<pubkey>:<identifier>
     // e.g. "30023:pubkey:identifier"
     // In production, use a proper bech32/nostr parser!
-    const parts = naddr.split(":");
+    const parts = naddr.split(':');
     if (parts.length === 3) {
         return {
             kind: Number(parts[0]),
@@ -29,40 +29,30 @@ function parseNaddr(naddr: string) {
 
 export function NAddrEditor({ node, selected, deleteNode }: NodeViewProps) {
     useNDK();
-    const naddr: string = node.attrs.naddr || node.attrs.value || "";
+    const naddr: string = node.attrs.naddr || node.attrs.value || '';
     const { kind, pubkey, identifier } = parseNaddr(naddr);
 
-    const { events } = kind && pubkey && identifier
-        ? useSubscribe(
-            [{
-                kinds: [kind],
-                authors: [pubkey],
-                "#d": [identifier],
-                limit: 1,
-            }],
-            {},
-            [kind, pubkey, identifier]
-        )
-        : { events: [] };
-    const event = events && events.length > 0 ? events[0] : null;
-    const authorProfile = event?.pubkey ? useProfileValue(event.pubkey) : undefined;
+    const event = useEvent(naddr);
+    const authorProfile = useProfileValue(event?.pubkey);
 
     return (
         <NodeViewWrapper
             as="span"
-            className={`relative inline-flex items-center px-2 py-0.5 rounded text-green-800 text-xs font-mono cursor-pointer transition ${selected ? "bg-green-200" : "bg-green-100"}`}
+            className={`relative inline-flex items-center px-2 py-0.5 rounded text-green-800 text-xs font-mono cursor-pointer transition ${selected ? 'bg-green-200' : 'bg-green-100'}`}
             data-entity="naddr"
         >
-            {selected && (
-                <DeleteButton onClick={deleteNode} />
-            )}
-            {event
-                ? <>
-                    <span className="font-semibold">{authorProfile?.displayName || authorProfile?.name || event.pubkey?.slice(0, 8)}</span>
+            {selected && <DeleteButton onClick={deleteNode} />}
+            {event ? (
+                <>
+                    <span className="font-semibold">
+                        {authorProfile?.displayName || authorProfile?.name || event.pubkey?.slice(0, 8)}
+                    </span>
                     <span className="mx-1 text-green-400">•</span>
                     <span className="truncate max-w-[8em]">{identifier || naddr}</span>
                 </>
-                : naddr}
+            ) : (
+                naddr
+            )}
         </NodeViewWrapper>
     );
 }

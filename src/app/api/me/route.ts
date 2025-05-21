@@ -1,5 +1,5 @@
+import { createErrorResponse, validateNip98Auth } from '@/lib/nip98-middleware';
 import { NextRequest, NextResponse } from 'next/server';
-import { validateNip98Auth, createErrorResponse } from '@/lib/nip98-middleware';
 
 /**
  * GET /api/me
@@ -9,19 +9,16 @@ import { validateNip98Auth, createErrorResponse } from '@/lib/nip98-middleware';
 export async function GET(req: NextRequest) {
     // Validate NIP-98 authentication
     const authResult = await validateNip98Auth(req);
-    
+
     if (!authResult.valid) {
-        return createErrorResponse(
-            authResult.error || 'Authentication failed',
-            authResult.status || 401
-        );
+        return createErrorResponse(authResult.error || 'Authentication failed', authResult.status || 401);
     }
-    
+
     // Get the pubkey from the auth result
     const { pubkey } = authResult;
-    
+
     // Return just the pubkey
     return NextResponse.json({
-        pubkey
+        pubkey,
     });
 }

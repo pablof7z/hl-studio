@@ -1,5 +1,5 @@
-import React from "react";
-import { useProfileValue } from "@/domains/profiles/hooks/useProfileValue";
+import { useProfileValue } from '@/domains/profiles/hooks/useProfileValue';
+import React from 'react';
 
 type Article = {
     tagId: () => string;
@@ -19,12 +19,8 @@ export function ArticleCard({ article }: ArticleCardProps) {
     return (
         <li className="article-card p-4 bg-white rounded shadow mb-2">
             <div className="flex items-center gap-2 mb-2">
-                <span className="font-semibold">
-                    {profile?.displayName || article.pubkey.slice(0, 8)}
-                </span>
-                <span className="text-xs text-gray-400">
-                    {new Date(article.created_at * 1000).toLocaleString()}
-                </span>
+                <span className="font-semibold">{profile?.displayName || article.pubkey.slice(0, 8)}</span>
+                <span className="text-xs text-gray-400">{new Date(article.created_at * 1000).toLocaleString()}</span>
             </div>
             <div className="text-gray-800">{article.content}</div>
         </li>

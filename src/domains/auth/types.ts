@@ -2,10 +2,10 @@
  * Enum of supported authentication methods.
  */
 export enum AuthMethod {
-    Nip07 = "nip07",
-    Nsec = "nsec",
-    Bunker = "bunker",
-    NostrConnect = "nostrconnect"
+    Nip07 = 'nip07',
+    Nsec = 'nsec',
+    Bunker = 'bunker',
+    NostrConnect = 'nostrconnect',
 }
 
 /**

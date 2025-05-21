@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { AuthMethod, AuthError } from "@/domains/auth";
+import { AuthError, AuthMethod } from '@/domains/auth';
+import { create } from 'zustand';
 
 interface LoginUiState {
     activeMethod: AuthMethod | null;
@@ -12,8 +12,8 @@ export const useLoginUiStore = create<LoginUiState>((set) => ({
     activeMethod: null,
     error: null,
     setActiveMethod: (method) => {
-        console.log("Setting active method:", method); 
-        set({ activeMethod: method })
+        console.log('Setting active method:', method);
+        set({ activeMethod: method });
     },
     setError: (error) => set({ error }),
 }));

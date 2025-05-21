@@ -9,4 +9,4 @@ export type GroupMetadata = {
     about: string;
     scope: GroupScope;
     access: GroupAccess;
-}
+};

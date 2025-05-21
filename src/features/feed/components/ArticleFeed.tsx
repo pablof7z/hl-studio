@@ -1,6 +1,6 @@
-import React from "react";
-import { ArticleCard } from "./ArticleCard";
-import { useArticlesStore } from "@/domains/articles";
+import { useArticlesStore } from '@/domains/articles';
+import React from 'react';
+import { ArticleCard } from './ArticleCard';
 
 export function ArticleFeed() {
     const articles = useArticlesStore((state) => state.articles);

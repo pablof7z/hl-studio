@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { NDKEvent } from '@nostr-dev-kit/ndk';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * NIP-98 middleware for Next.js API routes
@@ -12,7 +12,7 @@ export async function validateNip98Auth(req: NextRequest) {
         return {
             valid: false,
             error: 'Missing or invalid Authorization header',
-            status: 401
+            status: 401,
         };
     }
 
@@ -34,7 +34,7 @@ export async function validateNip98Auth(req: NextRequest) {
             return {
                 valid: false,
                 error: 'Invalid event kind, expected 27235',
-                status: 401
+                status: 401,
             };
         }
 
@@ -44,17 +44,17 @@ export async function validateNip98Auth(req: NextRequest) {
             return {
                 valid: false,
                 error: 'Event timestamp is too old or in the future',
-                status: 401
+                status: 401,
             };
         }
 
         // Validate URL
-        const urlTag = event.tags.find(tag => tag[0] === 'u');
+        const urlTag = event.tags.find((tag) => tag[0] === 'u');
         if (!urlTag) {
             return {
                 valid: false,
                 error: 'Missing URL tag',
-                status: 401
+                status: 401,
             };
         }
 
@@ -62,24 +62,21 @@ export async function validateNip98Auth(req: NextRequest) {
         const tagUrl = new URL(urlTag[1]);
 
         // Compare URLs (ignoring protocol differences between http/https in development)
-        if (
-            tagUrl.pathname !== requestUrl.pathname ||
-            tagUrl.search !== requestUrl.search
-        ) {
+        if (tagUrl.pathname !== requestUrl.pathname || tagUrl.search !== requestUrl.search) {
             return {
                 valid: false,
                 error: 'URL mismatch',
-                status: 401
+                status: 401,
             };
         }
 
         // Validate method
-        const methodTag = event.tags.find(tag => tag[0] === 'method');
+        const methodTag = event.tags.find((tag) => tag[0] === 'method');
         if (!methodTag) {
             return {
                 valid: false,
                 error: 'Missing method tag',
-                status: 401
+                status: 401,
             };
         }
 
@@ -87,7 +84,7 @@ export async function validateNip98Auth(req: NextRequest) {
             return {
                 valid: false,
                 error: 'Method mismatch',
-                status: 401
+                status: 401,
             };
         }
 
@@ -103,13 +100,13 @@ export async function validateNip98Auth(req: NextRequest) {
             }
 
             // Validate payload hash if present
-            const payloadTag = event.tags.find(tag => tag[0] === 'payload');
+            const payloadTag = event.tags.find((tag) => tag[0] === 'payload');
             if (payloadTag) {
                 const encoder = new TextEncoder();
                 const data = encoder.encode(payload);
                 const hashBuffer = await crypto.subtle.digest('SHA-256', data);
                 const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
                 if (payloadTag[1] !== hashHex) {
                     return {
@@ -117,7 +114,7 @@ export async function validateNip98Auth(req: NextRequest) {
                         error: 'Payload hash mismatch',
                         status: 401,
                         payload,
-                        json
+                        json,
                     };
                 }
             }
@@ -131,14 +128,14 @@ export async function validateNip98Auth(req: NextRequest) {
                 error: 'Invalid signature',
                 status: 401,
                 payload,
-                json
+                json,
             };
         }
 
         // All validations passed
         const result: any = {
             valid: true,
-            pubkey: event.pubkey
+            pubkey: event.pubkey,
         };
         if (payload !== undefined) result.payload = payload;
         if (json !== undefined) result.json = json;
@@ -148,7 +145,7 @@ export async function validateNip98Auth(req: NextRequest) {
         return {
             valid: false,
             error: 'Invalid NIP-98 event',
-            status: 401
+            status: 401,
         };
     }
 }
@@ -157,8 +154,5 @@ export async function validateNip98Auth(req: NextRequest) {
  * Helper function to create a response with error details
  */
 export function createErrorResponse(error: string, status: number) {
-    return NextResponse.json(
-        { error },
-        { status }
-    );
+    return NextResponse.json({ error }, { status });
 }

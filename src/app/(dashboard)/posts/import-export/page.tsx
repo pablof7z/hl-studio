@@ -1,18 +1,18 @@
-import type { Metadata } from "next"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { ImportExportTabs } from "@/components/posts/import-export/import-export-tabs"
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { DashboardShell } from '@/components/dashboard/dashboard-shell';
+import { ImportExportTabs } from '@/components/posts/import-export/import-export-tabs';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Import/Export | Highlighter",
-  description: "Import and export your content on Highlighter",
-}
+    title: 'Import/Export | Highlighter',
+    description: 'Import and export your content on Highlighter',
+};
 
 export default function ImportExportPage() {
-  return (
-    <DashboardShell>
-      <DashboardHeader heading="Import/Export" text="Transfer your content to and from Highlighter" />
-      <ImportExportTabs />
-    </DashboardShell>
-  )
+    return (
+        <DashboardShell>
+            <DashboardHeader heading="Import/Export" text="Transfer your content to and from Highlighter" />
+            <ImportExportTabs />
+        </DashboardShell>
+    );
 }

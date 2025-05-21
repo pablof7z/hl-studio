@@ -3,8 +3,8 @@
  * Uses Drizzle ORM for SQLite.
  */
 
-import { posts, PostStatus } from "@/domains/db/schema";
-import { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
+import { posts, PostStatus } from '@/domains/db/schema';
+import { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 
 /**
  * Update the status (and optionally error and publishAttemptedAt) of a post.
@@ -29,12 +29,12 @@ export async function updatePostStatus(
                 status,
                 publishError: opts?.publishError ?? null,
                 publishAttemptedAt: opts?.publishAttemptedAt ?? null,
-                updatedAt: now
+                updatedAt: now,
             })
             .where(posts.id.eq(postId))
             .returning();
         return row ?? null;
     } catch (err) {
-        throw new Error("Failed to update post status: " + (err instanceof Error ? err.message : String(err)));
+        throw new Error('Failed to update post status: ' + (err instanceof Error ? err.message : String(err)));
     }
 }

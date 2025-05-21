@@ -1,5 +1,5 @@
-import { useArticles } from "@/domains/articles";
-import { useMemo } from "react";
+import { useArticles } from '@/domains/articles';
+import { useMemo } from 'react';
 
 /**
  * Composes domain hooks to provide dashboard data.
@@ -12,11 +12,11 @@ export function useDashboardData() {
     const stats = useMemo(
         () => [
             {
-                label: "Articles",
+                label: 'Articles',
                 value: articles.length,
             },
             {
-                label: "Authors",
+                label: 'Authors',
                 value: new Set(articles.map((a) => a.pubkey)).size,
             },
         ],
@@ -27,7 +27,7 @@ export function useDashboardData() {
     const subscriberGrowth = useMemo(
         () =>
             Array.from({ length: 12 }).map((_, i) => ({
-                date: `2025-${(i + 1).toString().padStart(2, "0")}`,
+                date: `2025-${(i + 1).toString().padStart(2, '0')}`,
                 value: Math.floor(Math.random() * 100 + 100),
             })),
         []

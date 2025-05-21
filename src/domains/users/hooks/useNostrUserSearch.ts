@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { NDKEvent, NDKFilter, NDKKind, NDKUser } from "@nostr-dev-kit/ndk";
-import { useNDK, useSubscribe } from "@nostr-dev-kit/ndk-hooks";
-import { nip19 } from "nostr-tools";
-import { NostrUserSearchResult } from "../types";
+import { NDKEvent, NDKFilter, NDKKind, NDKUser } from '@nostr-dev-kit/ndk';
+import { useNDK, useSubscribe } from '@nostr-dev-kit/ndk-hooks';
+import { nip19 } from 'nostr-tools';
+import { useEffect, useMemo, useState } from 'react';
+import { NostrUserSearchResult } from '../types';
 
 /**
  * Hook for searching Nostr users by name, pubkey, or npub
- * 
+ *
  * @param query - The search query string
  * @param limit - Maximum number of results to return (default: 10)
  * @returns Object containing users array and eose flag
@@ -14,15 +14,15 @@ import { NostrUserSearchResult } from "../types";
 export function useNostrUserSearch(query: string, limit = 10): NostrUserSearchResult {
     const { ndk } = useNDK();
     // Simple debounce implementation
-    const [debouncedQuery, setDebouncedQuery] = useState("");
+    const [debouncedQuery, setDebouncedQuery] = useState('');
     const [userMap, setUserMap] = useState<Map<string, NDKUser>>(new Map());
 
     const setFromBech32 = (query: string) => {
         let user: NDKUser | null = null;
 
         try {
-            if (query.startsWith("npub1")) user = new NDKUser({ npub: query });
-            else if (query.startsWith("nprofile1")) user = new NDKUser({ nprofile: query });
+            if (query.startsWith('npub1')) user = new NDKUser({ npub: query });
+            else if (query.startsWith('nprofile1')) user = new NDKUser({ nprofile: query });
         } catch {
             return false;
         }
@@ -32,27 +32,24 @@ export function useNostrUserSearch(query: string, limit = 10): NostrUserSearchRe
             return true;
         }
     };
-    
+
     // Debounce the query
     useEffect(() => {
-        if (query.trim() === "") {
+        if (query.trim() === '') {
             setUserMap(new Map());
-            setDebouncedQuery("");
+            setDebouncedQuery('');
             return;
         }
-        
-        if (
-            query.startsWith("npub1") ||
-            query.startsWith("nprofile1")
-        ) if (setFromBech32(query)) return;
-        
+
+        if (query.startsWith('npub1') || query.startsWith('nprofile1')) if (setFromBech32(query)) return;
+
         const timer = setTimeout(() => {
             setDebouncedQuery(query);
         }, 300);
 
         return () => clearTimeout(timer);
     }, [query]);
-    
+
     // Clear results when query changes significantly
     useEffect(() => {
         if (!debouncedQuery || debouncedQuery.length < 2) {
@@ -67,38 +64,40 @@ export function useNostrUserSearch(query: string, limit = 10): NostrUserSearchRe
         }
 
         const searchFilters: NDKFilter[] = [];
-        
+
         // Search by name or username
         searchFilters.push({
             kinds: [NDKKind.Metadata],
-            search: debouncedQuery
+            search: debouncedQuery,
         });
-        
+
         return searchFilters;
     }, [debouncedQuery, limit]);
 
     // Subscribe to user metadata events
-    const { events, eose } = useSubscribe(filters, { relayUrls: ['wss://relay.nostr.band'], closeOnEose: true }, [filters]);
+    const { events, eose } = useSubscribe(filters, { relayUrls: ['wss://relay.nostr.band'], closeOnEose: true }, [
+        filters,
+    ]);
 
     // Process events into users
     useEffect(() => {
         if (!events.length) return;
-        
+
         const newUserMap = new Map(userMap);
-        
-        events.forEach(event => {
+
+        events.forEach((event) => {
             if (!event) return;
-            
+
             try {
                 const user = ndk?.getUser({ pubkey: event.pubkey });
                 if (user) {
                     newUserMap.set(user.pubkey, user);
                 }
             } catch (e) {
-                console.error("Error processing user event:", e);
+                console.error('Error processing user event:', e);
             }
         });
-        
+
         setUserMap(newUserMap);
     }, [events, ndk]);
 

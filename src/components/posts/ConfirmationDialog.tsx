@@ -1,16 +1,15 @@
-import type React from "react"
-import { useState, useEffect } from "react"
-import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
-
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Calendar } from "@/components/ui/calendar"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { TimePickerDemo } from "./time-picker"; // Correct relative path
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { TimePickerDemo } from './time-picker'; // Correct relative path
 
 export interface ConfirmationDialogProps {
     open: boolean;
@@ -30,17 +29,17 @@ export function ConfirmationDialog({
     children,
 }: ConfirmationDialogProps) {
     const [date, setDate] = useState<Date | undefined>(undefined);
-    const [time, setTime] = useState<string>("09:00");
+    const [time, setTime] = useState<string>('09:00');
     const [isScheduled, setIsScheduled] = useState(false);
-    const [audience, setAudience] = useState<"all" | "subscribers">("all");
+    const [audience, setAudience] = useState<'all' | 'subscribers'>('all');
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (open) {
             setDate(undefined);
-            setTime("09:00");
+            setTime('09:00');
             setIsScheduled(false);
-            setAudience("all");
+            setAudience('all');
         }
     }, [open]);
 
@@ -54,14 +53,13 @@ export function ConfirmationDialog({
                 const scheduleDateTime = new Date(date);
                 const [hours, minutes] = time.split(':').map(Number);
                 scheduleDateTime.setHours(hours, minutes, 0, 0);
-                if (onSchedule)
-                    onSchedule(scheduleDateTime);
+                if (onSchedule) onSchedule(scheduleDateTime);
             } else {
-                setError("Date and time must be set for scheduling.");
+                setError('Date and time must be set for scheduling.');
                 return;
             }
         }
-            onPublish();
+        onPublish();
         onOpenChange(false);
     };
 
@@ -71,9 +69,7 @@ export function ConfirmationDialog({
                 <DialogHeader>
                     <DialogTitle className="text-xl">Publish Article</DialogTitle>
                 </DialogHeader>
-                {error && (
-                    <div className="mb-2 text-sm text-red-600">{error}</div>
-                )}
+                {error && <div className="mb-2 text-sm text-red-600">{error}</div>}
                 <div className="grid gap-6 py-4">
                     {children}
                     <Separator />
@@ -83,8 +79,8 @@ export function ConfirmationDialog({
 
                         <div className="space-y-2">
                             <RadioGroup
-                                value={isScheduled ? "schedule" : "publish"}
-                                onValueChange={(value) => setIsScheduled(value === "schedule")}
+                                value={isScheduled ? 'schedule' : 'publish'}
+                                onValueChange={(value) => setIsScheduled(value === 'schedule')}
                                 className="flex flex-col space-y-1"
                             >
                                 <div className="flex items-center space-x-2">
@@ -109,7 +105,7 @@ export function ConfirmationDialog({
                                                             className="w-full sm:w-[240px] justify-start text-left font-normal"
                                                         >
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                                            {date ? format(date, 'PPP') : <span>Pick a date</span>}
                                                         </Button>
                                                     </DialogTrigger>
                                                     <DialogContent className="w-auto p-0 z-[500]">
@@ -118,7 +114,10 @@ export function ConfirmationDialog({
                                                             selected={date}
                                                             onSelect={setDate}
                                                             initialFocus
-                                                            disabled={(d) => d < new Date(new Date().setDate(new Date().getDate() -1))} // Allow today
+                                                            disabled={(d) =>
+                                                                d <
+                                                                new Date(new Date().setDate(new Date().getDate() - 1))
+                                                            } // Allow today
                                                         />
                                                     </DialogContent>
                                                 </Dialog>
@@ -176,13 +175,9 @@ export function ConfirmationDialog({
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button
-                        onClick={handleSubmit}
-                    >
-                        {(isScheduled ? "Schedule" : "Publish") + " Article"}
-                    </Button>
+                    <Button onClick={handleSubmit}>{(isScheduled ? 'Schedule' : 'Publish') + ' Article'}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-    )
+    );
 }

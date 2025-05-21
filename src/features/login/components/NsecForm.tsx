@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { useNsecLogin, AuthMethod } from "@/domains/auth";
-import { useLoginUi } from "../hooks/useLoginUi";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import { AuthMethod, useNsecLogin } from '@/domains/auth';
+import React, { useState } from 'react';
+import { useLoginUi } from '../hooks/useLoginUi';
 
 export function NsecForm() {
-    const [nsec, setNsec] = useState("");
+    const [nsec, setNsec] = useState('');
     const nsecLogin = useNsecLogin();
     const { setError } = useLoginUi();
 
@@ -15,7 +15,7 @@ export function NsecForm() {
         } catch (err) {
             setError({
                 method: AuthMethod.Nsec,
-                message: err instanceof Error ? err.message : "nsec login failed",
+                message: err instanceof Error ? err.message : 'nsec login failed',
             });
         }
     };

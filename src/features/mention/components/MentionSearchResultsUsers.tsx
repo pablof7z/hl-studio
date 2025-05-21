@@ -1,6 +1,6 @@
-import React from "react";
-import { NDKUser } from "@nostr-dev-kit/ndk";
-import { useProfileValue } from "@nostr-dev-kit/ndk-hooks";
+import { NDKUser } from '@nostr-dev-kit/ndk';
+import { useProfileValue } from '@nostr-dev-kit/ndk-hooks';
+import React from 'react';
 
 interface MentionUserResultProps {
     user: NDKUser;
@@ -9,12 +9,7 @@ interface MentionUserResultProps {
     onSelect: (user: NDKUser, index: number) => void;
 }
 
-const MentionUserResult: React.FC<MentionUserResultProps> = ({
-    user,
-    index,
-    isSelected,
-    onSelect
-}) => {
+const MentionUserResult: React.FC<MentionUserResultProps> = ({ user, index, isSelected, onSelect }) => {
     const profile = useProfileValue(user.pubkey);
 
     return (
@@ -33,12 +28,8 @@ const MentionUserResult: React.FC<MentionUserResultProps> = ({
                 )}
             </div>
             <div className="flex-1 overflow-hidden">
-                <div className="font-medium truncate">
-                    {profile?.displayName || profile?.name || "Anonymous"}
-                </div>
-                <div className="text-xs text-muted-foreground truncate">
-                    {user.npub.slice(0, 12)}...
-                </div>
+                <div className="font-medium truncate">{profile?.displayName || profile?.name || 'Anonymous'}</div>
+                <div className="text-xs text-muted-foreground truncate">{user.npub.slice(0, 12)}...</div>
             </div>
         </div>
     );
@@ -53,7 +44,7 @@ interface MentionSearchResultsUsersProps {
 export const MentionSearchResultsUsers: React.FC<MentionSearchResultsUsersProps> = ({
     users,
     selectedIndex,
-    onSelectUser
+    onSelectUser,
 }) => {
     if (users.length === 0) {
         return null;

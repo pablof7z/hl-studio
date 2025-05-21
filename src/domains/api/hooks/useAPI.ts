@@ -1,11 +1,10 @@
-import { useCallback } from "react";
-import { NDKEvent, wrapEvent } from "@nostr-dev-kit/ndk-hooks";
-import useSWR, { mutate as globalMutate, SWRResponse, KeyedMutator } from "swr";
-import NDK, { useNDK, useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks";
-import { createNip98AuthHeader } from "../utils/createNip98AuthHeader";
-import { ApiPost, ClientPost, ApiPostsResponse } from "../schemas";
+import NDK, { NDKEvent, useNDK, useNDKCurrentPubkey, wrapEvent } from '@nostr-dev-kit/ndk-hooks';
+import { useCallback } from 'react';
+import useSWR, { mutate as globalMutate, KeyedMutator, SWRResponse } from 'swr';
+import { ApiPost, ApiPostsResponse, ClientPost } from '../schemas';
+import { createNip98AuthHeader } from '../utils/createNip98AuthHeader';
 
-type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 interface APIOptions {
     method?: HTTPMethod;
@@ -28,27 +27,16 @@ export interface ScheduledPostPayload {
     rawEvent: any;
 }
 
-async function fetchWithAuth(
-    ndk: NDK | null,
-    pubkey: string | undefined,
-    url: string,
-    options: APIOptions = {}
-) {
+async function fetchWithAuth(ndk: NDK | null, pubkey: string | undefined, url: string, options: APIOptions = {}) {
     if (!ndk || !pubkey || !ndk.signer) {
-        throw new Error("NDK not initialized, user not logged in, or signer missing");
+        throw new Error('NDK not initialized, user not logged in, or signer missing');
     }
 
-    const method = options.method || "GET";
+    const method = options.method || 'GET';
     const absoluteUrl = new URL(url, window.location.origin).toString();
 
     // Use shared NIP-98 header utility
-    const authHeader = await createNip98AuthHeader(
-        ndk,
-        absoluteUrl,
-        method,
-        options.body,
-        ndk.signer
-    );
+    const authHeader = await createNip98AuthHeader(ndk, absoluteUrl, method, options.body, ndk.signer);
 
     // Prepare headers
     const headers: Record<string, string> = {
@@ -57,8 +45,8 @@ async function fetchWithAuth(
     };
 
     // If we have a body, add the content-type header if not already set
-    if (options.body && !headers["Content-Type"] && typeof options.body !== "string") {
-        headers["Content-Type"] = "application/json";
+    if (options.body && !headers['Content-Type'] && typeof options.body !== 'string') {
+        headers['Content-Type'] = 'application/json';
     }
 
     // Make the request
@@ -66,7 +54,7 @@ async function fetchWithAuth(
         method,
         headers,
         body: options.body
-            ? typeof options.body === "string"
+            ? typeof options.body === 'string'
                 ? options.body
                 : JSON.stringify(options.body)
             : undefined,
@@ -78,7 +66,7 @@ async function fetchWithAuth(
         let errorMsg = `API request failed: ${response.status} ${response.statusText}`;
         try {
             const errJson = await response.json();
-            errorMsg += errJson?.message ? ` - ${errJson.message}` : "";
+            errorMsg += errJson?.message ? ` - ${errJson.message}` : '';
         } catch {
             // ignore
         }
@@ -86,8 +74,8 @@ async function fetchWithAuth(
     }
 
     // Parse response based on content-type
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
         return response.json();
     }
 
@@ -108,15 +96,11 @@ export function useAPI() {
         function <T = any>(url: string): APIResponse<T> {
             // SWR key is url + pubkey (to avoid leaking data between users)
             const swrKey = pubkey ? [url, pubkey] : null;
-            const swr = useSWR<T>(
-                swrKey,
-                async () => fetchWithAuth(ndk, pubkey, url, { method: "GET" }),
-                {
-                    revalidateOnFocus: true,
-                    shouldRetryOnError: true,
-                    // No loading flag: offline-first
-                }
-            );
+            const swr = useSWR<T>(swrKey, async () => fetchWithAuth(ndk, pubkey, url, { method: 'GET' }), {
+                revalidateOnFocus: true,
+                shouldRetryOnError: true,
+                // No loading flag: offline-first
+            });
             return swr;
         },
         [ndk, pubkey]
@@ -126,21 +110,21 @@ export function useAPI() {
     const post = useCallback(
         async function <T = any>(url: string, body?: any, options: APIOptions = {}) {
             // Prevent duplicate submissions by disabling button in UI, but here we can throw if needed
-            return fetchWithAuth(ndk, pubkey, url, { ...options, method: "POST", body });
+            return fetchWithAuth(ndk, pubkey, url, { ...options, method: 'POST', body });
         },
         [ndk, pubkey]
     );
 
     const put = useCallback(
         async function <T = any>(url: string, body?: any, options: APIOptions = {}) {
-            return fetchWithAuth(ndk, pubkey, url, { ...options, method: "PUT", body });
+            return fetchWithAuth(ndk, pubkey, url, { ...options, method: 'PUT', body });
         },
         [ndk, pubkey]
     );
 
     const del = useCallback(
         async function <T = any>(url: string, options: APIOptions = {}) {
-            return fetchWithAuth(ndk, pubkey, url, { ...options, method: "DELETE" });
+            return fetchWithAuth(ndk, pubkey, url, { ...options, method: 'DELETE' });
         },
         [ndk, pubkey]
     );
@@ -166,7 +150,7 @@ export function useAPI() {
          */
         addPost: useCallback(
             async (payload: ScheduledPostPayload) => {
-                return post("/api/posts", payload);
+                return post('/api/posts', payload);
             },
             [post]
         ),
@@ -174,18 +158,18 @@ export function useAPI() {
          * Typed helper for fetching scheduled posts.
          * Returns posts with rawEvent parsed and wrapped as NDKEvent.
          */
-        getPosts: useCallback(
-            (): APIResponse<ClientPost[]> => {
-                // SWR key is /api/posts + pubkey
-                const swrKey = pubkey ? ["/api/posts", pubkey] : null;
-                const swr = useSWR<ClientPost[]>(
-                    swrKey,
-                    async () => {
-                        const res: ApiPostsResponse = await fetchWithAuth(ndk, pubkey, "/api/posts", { method: "GET" });
-                        // The backend returns { posts: [...] }
-                        const posts = Array.isArray(res.posts) ? res.posts : [];
-                        // For each post, parse rawEvent and wrap as NDKEvent
-                        return await Promise.all(posts.map(async (post: ApiPost) => {
+        getPosts: useCallback((): APIResponse<ClientPost[]> => {
+            // SWR key is /api/posts + pubkey
+            const swrKey = pubkey ? ['/api/posts', pubkey] : null;
+            const swr = useSWR<ClientPost[]>(
+                swrKey,
+                async () => {
+                    const res: ApiPostsResponse = await fetchWithAuth(ndk, pubkey, '/api/posts', { method: 'GET' });
+                    // The backend returns { posts: [...] }
+                    const posts = Array.isArray(res.posts) ? res.posts : [];
+                    // For each post, parse rawEvent and wrap as NDKEvent
+                    return await Promise.all(
+                        posts.map(async (post: ApiPost) => {
                             let wrappedEvent = null;
                             try {
                                 const parsed = JSON.parse(post.rawEvent);
@@ -198,16 +182,15 @@ export function useAPI() {
                                 ...post,
                                 event: wrappedEvent,
                             };
-                        }));
-                    },
-                    {
-                        revalidateOnFocus: true,
-                        shouldRetryOnError: true,
-                    }
-                );
-                return swr;
-            },
-            [ndk, pubkey]
-        ),
+                        })
+                    );
+                },
+                {
+                    revalidateOnFocus: true,
+                    shouldRetryOnError: true,
+                }
+            );
+            return swr;
+        }, [ndk, pubkey]),
     };
 }

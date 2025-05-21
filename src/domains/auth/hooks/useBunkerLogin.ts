@@ -1,6 +1,6 @@
-import { useCallback } from "react";
-import { useNDK, useNDKSessionLogin } from "@nostr-dev-kit/ndk-hooks";
-import { NDKNip46Signer } from "@nostr-dev-kit/ndk";
+import { NDKNip46Signer } from '@nostr-dev-kit/ndk';
+import { useNDK, useNDKSessionLogin } from '@nostr-dev-kit/ndk-hooks';
+import { useCallback } from 'react';
 
 /**
  * Returns a callback to log in with a Bunker URI.

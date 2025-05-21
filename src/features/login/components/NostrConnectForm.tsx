@@ -1,21 +1,21 @@
 // NostrConnectForm.tsx
-import React, { useState } from "react";
-import { useNostrConnectLogin, AuthMethod } from "@/domains/auth";
-import { useLoginUi } from "../hooks/useLoginUi";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import { AuthMethod, useNostrConnectLogin } from '@/domains/auth';
+import React, { useState } from 'react';
+import { useLoginUi } from '../hooks/useLoginUi';
 
 // Inline NostrConnect SVG icon
 const NostrConnectIcon = () => (
     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-        <rect width="40" height="40" rx="12" fill="#7C3AED"/>
-        <path d="M12 20a8 8 0 0116 0" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-        <circle cx="20" cy="20" r="4" fill="#fff"/>
-        <path d="M20 24v4M20 12v4" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+        <rect width="40" height="40" rx="12" fill="#7C3AED" />
+        <path d="M12 20a8 8 0 0116 0" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="20" cy="20" r="4" fill="#fff" />
+        <path d="M20 24v4M20 12v4" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
     </svg>
 );
 
 export function NostrConnectForm() {
-    const [uri, setUri] = useState("");
+    const [uri, setUri] = useState('');
     const nostrConnectLogin = useNostrConnectLogin();
     const { setError, error } = useLoginUi();
 
@@ -26,7 +26,7 @@ export function NostrConnectForm() {
         } catch (err) {
             setError({
                 method: AuthMethod.NostrConnect,
-                message: err instanceof Error ? err.message : "NostrConnect login failed",
+                message: err instanceof Error ? err.message : 'NostrConnect login failed',
             });
         }
     };

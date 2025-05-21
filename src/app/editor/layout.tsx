@@ -1,9 +1,5 @@
-import type React from "react"
+import type React from 'react';
 
-export default function EditorLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return <>{children}</>
+export default function EditorLayout({ children }: { children: React.ReactNode }) {
+    return <>{children}</>;
 }

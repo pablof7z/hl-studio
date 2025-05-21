@@ -1,7 +1,7 @@
-import { useEditorStore } from "@/domains/editor/stores/editorStore";
-import { Input } from "@/components/ui/input"; // Assuming Input component is used
-import { Label } from "@/components/ui/label"; // Assuming Label component is used
-import React from "react";
+import { Input } from '@/components/ui/input'; // Assuming Input component is used
+import { Label } from '@/components/ui/label'; // Assuming Label component is used
+import { useEditorStore } from '@/domains/editor/stores/editorStore';
+import React from 'react';
 
 interface TagsEditorProps {
     tags?: string[];
@@ -14,7 +14,10 @@ export function TagsEditor({ tags = [], onTagsChange }: TagsEditorProps) {
     const { isEarlyAccess } = useEditorStore();
 
     const handleTagsInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newTags = event.target.value.split(",").map(tag => tag.trim()).filter(tag => tag !== "");
+        const newTags = event.target.value
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter((tag) => tag !== '');
         onTagsChange(newTags);
     };
 
@@ -39,7 +42,7 @@ export function TagsEditor({ tags = [], onTagsChange }: TagsEditorProps) {
                         type="text"
                         className="w-full border rounded px-3 py-2"
                         placeholder="Add tags separated by commas"
-                        value={tags.join(", ")}
+                        value={tags.join(', ')}
                         onChange={handleTagsInputChange}
                     />
                 </div>

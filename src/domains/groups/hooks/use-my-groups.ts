@@ -1,20 +1,20 @@
-import { useNDK, useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks";
-import { usePinnedGroups, usePinnedGroupsStore } from "../stores/pinned-groups";
-import { useEffect, useMemo } from "react";
-import { GroupEntry, useGroupStore } from "../stores";
+import { useNDK, useNDKCurrentPubkey } from '@nostr-dev-kit/ndk-hooks';
+import { useEffect, useMemo } from 'react';
+import { GroupEntry, useGroupStore } from '../stores';
+import { usePinnedGroups, usePinnedGroupsStore } from '../stores/pinned-groups';
 
 export function useMyGroups() {
     const { ndk } = useNDK();
     const currentPubkey = useNDKCurrentPubkey();
     const myPinnedGroups = usePinnedGroups(currentPubkey);
-    const groups = useGroupStore(s => s.groups);
-    const fetchGroups = useGroupStore(s => s.fetchGroups);
+    const groups = useGroupStore((s) => s.groups);
+    const fetchGroups = useGroupStore((s) => s.fetchGroups);
 
     useEffect(() => {
         if (!ndk || !currentPubkey) return;
 
         const groupsToFetch: GroupEntry[] = [];
-        
+
         for (const groupId in myPinnedGroups) {
             if (myPinnedGroups[groupId] && !groups[groupId]) {
                 groupsToFetch.push(myPinnedGroups[groupId]);

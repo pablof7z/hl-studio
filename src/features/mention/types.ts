@@ -1,6 +1,6 @@
-import { NDKUser, NDKEvent } from "@nostr-dev-kit/ndk";
+import { NDKEvent, NDKUser } from '@nostr-dev-kit/ndk';
 
-export type MentionEntityType = "user" | "event" | null;
+export type MentionEntityType = 'user' | 'event' | null;
 
 export interface MentionEntity {
     type: MentionEntityType;

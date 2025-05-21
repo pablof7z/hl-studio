@@ -1,7 +1,7 @@
-import React from "react";
-import { NDKEvent, NDKUser } from "@nostr-dev-kit/ndk";
-import { useProfileValue } from "@nostr-dev-kit/ndk-hooks";
-import { NostrEventSearchResult } from "@/domains/events";
+import { NostrEventSearchResult } from '@/domains/events';
+import { NDKEvent, NDKUser } from '@nostr-dev-kit/ndk';
+import { useProfileValue } from '@nostr-dev-kit/ndk-hooks';
+import React from 'react';
 
 interface MentionUserResultProps {
     user: NDKUser;
@@ -10,36 +10,27 @@ interface MentionUserResultProps {
     onSelect: (user: NDKUser, index: number) => void;
 }
 
-const MentionUserResult: React.FC<MentionUserResultProps> = ({ 
-    user, 
-    index, 
-    isSelected, 
-    onSelect 
-}) => {
+const MentionUserResult: React.FC<MentionUserResultProps> = ({ user, index, isSelected, onSelect }) => {
     const profile = useProfileValue(user.pubkey);
-    
+
     return (
-        <div 
+        <div
             className={`flex items-center p-2 cursor-pointer ${isSelected ? 'bg-primary/10' : 'hover:bg-muted'}`}
             onClick={() => onSelect(user, index)}
             data-testid={`mention-user-result-${index}`}
         >
             <div className="w-8 h-8 rounded-full overflow-hidden mr-3 bg-muted">
                 {profile?.image && (
-                    <img 
-                        src={profile.image} 
-                        alt={profile?.displayName || profile?.name || user.npub.slice(0, 8)} 
+                    <img
+                        src={profile.image}
+                        alt={profile?.displayName || profile?.name || user.npub.slice(0, 8)}
                         className="w-full h-full object-cover"
                     />
                 )}
             </div>
             <div className="flex-1 overflow-hidden">
-                <div className="font-medium truncate">
-                    {profile?.displayName || profile?.name || "Anonymous"}
-                </div>
-                <div className="text-xs text-muted-foreground truncate">
-                    {user.npub.slice(0, 12)}...
-                </div>
+                <div className="font-medium truncate">{profile?.displayName || profile?.name || 'Anonymous'}</div>
+                <div className="text-xs text-muted-foreground truncate">{user.npub.slice(0, 12)}...</div>
             </div>
         </div>
     );
@@ -50,28 +41,21 @@ interface MentionEventResultProps {
     onSelect: (event: NDKEvent) => void;
 }
 
-const MentionEventResult: React.FC<MentionEventResultProps> = ({ 
-    eventResult, 
-    onSelect 
-}) => {
+const MentionEventResult: React.FC<MentionEventResultProps> = ({ eventResult, onSelect }) => {
     const { event, type, isValid } = eventResult;
-    
+
     if (!event || !isValid) {
-        return (
-            <div className="p-2 text-sm text-muted-foreground">
-                Invalid or unsupported event identifier
-            </div>
-        );
+        return <div className="p-2 text-sm text-muted-foreground">Invalid or unsupported event identifier</div>;
     }
-    
+
     // Get author profile if available
     const profile = useProfileValue(event.pubkey);
-    
+
     // Get a summary of the event content
     const summary = event.content?.slice(0, 60) + (event.content?.length > 60 ? '...' : '');
-    
+
     return (
-        <div 
+        <div
             className="flex flex-col p-2 cursor-pointer hover:bg-muted"
             onClick={() => onSelect(event)}
             data-testid="mention-event-result"
@@ -84,9 +68,7 @@ const MentionEventResult: React.FC<MentionEventResultProps> = ({
                     by {profile?.displayName || profile?.name || event.pubkey.slice(0, 8)}
                 </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-                {summary || 'No content'}
-            </div>
+            <div className="text-sm text-muted-foreground">{summary || 'No content'}</div>
         </div>
     );
 };
@@ -104,7 +86,7 @@ export const MentionSearchResults: React.FC<MentionSearchResultsProps> = ({
     selectedIndex,
     event,
     onSelectUser,
-    onSelectEvent
+    onSelectEvent,
 }) => {
     if (event) {
         // Show event result
@@ -118,27 +100,19 @@ export const MentionSearchResults: React.FC<MentionSearchResultsProps> = ({
                     data-testid="mention-event-result"
                 >
                     <div className="flex items-center mb-1">
-                        <div className="text-sm font-medium">
-                            Event
-                        </div>
+                        <div className="text-sm font-medium">Event</div>
                         <div className="text-xs text-muted-foreground ml-2">
                             by {profile?.displayName || profile?.name || event.pubkey.slice(0, 8)}
                         </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                        {summary || 'No content'}
-                    </div>
+                    <div className="text-sm text-muted-foreground">{summary || 'No content'}</div>
                 </div>
             </div>
         );
     }
 
     if (users.length === 0) {
-        return (
-            <div className="p-4 text-center text-muted-foreground">
-                No users found
-            </div>
-        );
+        return <div className="p-4 text-center text-muted-foreground">No users found</div>;
     }
 
     return (

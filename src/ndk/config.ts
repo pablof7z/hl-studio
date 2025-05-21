@@ -1,6 +1,6 @@
 /**
  * NDK relay configuration
- * 
+ *
  * This file contains the configuration for NDK relays.
  * In production, we use a set of default relays.
  * For E2E tests, we use a local relay started with `nak serve`.
@@ -13,12 +13,12 @@ export const DEFAULT_RELAYS = [
     'wss://relay.primal.net',
     'wss://purplepag.es',
     'wss://relay.nostr.band',
-    'wss://relay.damus.io'
+    'wss://relay.damus.io',
 ];
 
 /**
  * Get relay URLs based on environment
- * 
+ *
  * @returns Array of relay URLs to connect to
  */
 export function getRelayUrls(): string[] {

@@ -1,5 +1,5 @@
-import React from "react";
-import { AuthError as AuthErrorType } from "@/domains/auth";
+import { AuthError as AuthErrorType } from '@/domains/auth';
+import React from 'react';
 
 interface AuthErrorProps {
     error: AuthErrorType;
@@ -8,7 +8,7 @@ interface AuthErrorProps {
 
 export function AuthError({ error, onClear }: AuthErrorProps) {
     return (
-        <div style={{ color: "red", border: "1px solid red", padding: 12, borderRadius: 4 }}>
+        <div style={{ color: 'red', border: '1px solid red', padding: 12, borderRadius: 4 }}>
             <div>
                 <strong>Auth Error ({error.method}):</strong> {error.message}
             </div>

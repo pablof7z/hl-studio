@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 export interface SettingsSidebarProps {
-    activeSettingsTab: 'metadata' | 'monetization'
-    setActiveSettingsTab: (tab: 'metadata' | 'monetization') => void
+    activeSettingsTab: 'metadata' | 'monetization';
+    setActiveSettingsTab: (tab: 'metadata' | 'monetization') => void;
 }
 
 export function SettingsSidebar({ activeSettingsTab, setActiveSettingsTab }: SettingsSidebarProps) {
@@ -30,5 +30,5 @@ export function SettingsSidebar({ activeSettingsTab, setActiveSettingsTab }: Set
                 </div>
             </div>
         </div>
-    )
+    );
 }

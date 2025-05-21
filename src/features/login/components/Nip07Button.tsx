@@ -1,7 +1,7 @@
-import React from "react";
-import { useNip07Login, AuthMethod } from "@/domains/auth";
-import { useLoginUi } from "../hooks/useLoginUi";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import { AuthMethod, useNip07Login } from '@/domains/auth';
+import React from 'react';
+import { useLoginUi } from '../hooks/useLoginUi';
 
 type Nip07ButtonProps = {
     active?: boolean;
@@ -18,15 +18,15 @@ export function Nip07Button({ active = false }: Nip07ButtonProps) {
         } catch (e) {
             setError({
                 method: AuthMethod.Nip07,
-                message: e instanceof Error ? e.message : "NIP-07 login failed",
+                message: e instanceof Error ? e.message : 'NIP-07 login failed',
             });
         }
     };
 
     return (
         <Button
-            variant={active ? "default" : "secondary"}
-            className={`w-full transition-all ${active ? "ring-2 ring-blue-400" : ""}`}
+            variant={active ? 'default' : 'secondary'}
+            className={`w-full transition-all ${active ? 'ring-2 ring-blue-400' : ''}`}
             onClick={handleClick}
         >
             Login with NIP-07 Extension

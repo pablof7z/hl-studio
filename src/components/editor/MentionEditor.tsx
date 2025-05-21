@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { NodeViewWrapper } from "@tiptap/react";
-import { NDKUser, useNDK, useProfileValue } from "@nostr-dev-kit/ndk-hooks";
+import { NDKUser, useNDK, useProfileValue } from '@nostr-dev-kit/ndk-hooks';
+import { NodeViewWrapper } from '@tiptap/react';
+import React, { useState } from 'react';
 
 /**
  * MentionEditor renders an nprofile entity as a styled inline component.

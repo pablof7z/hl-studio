@@ -1,48 +1,38 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Image from "next/image";
-import { Edit, ImageIcon, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import UserAvatar from "@/features/nostr/components/user/UserAvatar";
-import UserName from "@/features/nostr/components/user/UserName";
-import { useNDKCurrentPubkey } from "@nostr-dev-kit/ndk-hooks";
-import { useEditorStore } from "@/features/long-form-editor";
-import { Button } from "@/components/ui/button";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useEditorStore } from '@/features/long-form-editor';
+import UserAvatar from '@/features/nostr/components/user/UserAvatar';
+import UserName from '@/features/nostr/components/user/UserName';
+import { useNDKCurrentPubkey } from '@nostr-dev-kit/ndk-hooks';
+import { Edit, ImageIcon, X } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 
 export function SocialPreview() {
     const [isEditing, setIsEditing] = useState(false);
-    const [newTag, setNewTag] = useState("");
+    const [newTag, setNewTag] = useState('');
     const currentPubkey = useNDKCurrentPubkey();
-
     // Use the editor store directly
-    const {
-        title,
-        setTitle,
-        summary,
-        setSummary,
-        tags,
-        setTags,
-    } = useEditorStore();
+    const { title, setTitle, summary, setSummary, tags, setTags } = useEditorStore();
+    const hashtags = useMemo(() => (
+        tags.filter((t: string[]) => t[0] === 't').map(t => t[1])
+    ), [tags]);
 
     // For hero image, keep in editor store via a custom field
-    const [image, setImage] = useEditorStore(
-        (s) => [s.image, s.setImage] as [string, (img: string) => void]
-    );
+    const [image, setImage] = useEditorStore((s) => [s.image, s.setImage] as [string, (img: string) => void]);
 
     const handleAddTag = () => {
-        if (newTag && !tags.includes(newTag)) {
-            setTags([...tags, newTag]);
-            setNewTag("");
-        }
+            setTags([...tags, ["t", newTag]]);
+            setNewTag('');
     };
 
     const handleRemoveTag = (tagToRemove: string) => {
-        setTags(tags.filter((tag) => tag !== tagToRemove));
+        setTags(tags.filter((tag) => tag[0] === 't' && tag[1] !== tagToRemove));
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +53,7 @@ export function SocialPreview() {
                     <h3 className="text-lg font-medium">Social Preview</h3>
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
                         {isEditing ? (
-                            "Done"
+                            'Done'
                         ) : (
                             <>
                                 <Edit className="mr-2 h-4 w-4" /> Edit
@@ -77,8 +67,10 @@ export function SocialPreview() {
                         <div className="flex gap-4">
                             <div className="flex-1 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <UserAvatar pubkey={currentPubkey ?? ""} size={"xs"} />
-                                    <span className="text-sm font-medium"><UserName pubkey={currentPubkey ?? ""} /></span>
+                                    <UserAvatar pubkey={currentPubkey ?? ''} size={'xs'} />
+                                    <span className="text-sm font-medium">
+                                        <UserName pubkey={currentPubkey ?? ''} />
+                                    </span>
                                 </div>
 
                                 {isEditing ? (
@@ -97,10 +89,17 @@ export function SocialPreview() {
                                             rows={2}
                                         />
                                         <div className="flex flex-wrap gap-1 pt-1">
-                                            {tags.map((tag) => (
-                                                <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0 gap-1">
+                                            {hashtags.map((tag) => (
+                                                <Badge
+                                                    key={tag}
+                                                    variant="secondary"
+                                                    className="text-xs px-1.5 py-0 gap-1"
+                                                >
                                                     {tag}
-                                                    <button onClick={() => handleRemoveTag(tag)} className="ml-1 h-3 w-3 rounded-full flex items-center justify-center">
+                                                    <button
+                                                        onClick={() => handleRemoveTag(tag)}
+                                                        className="ml-1 h-3 w-3 rounded-full flex items-center justify-center"
+                                                    >
                                                         <X className="h-2 w-2" />
                                                     </button>
                                                 </Badge>
@@ -112,9 +111,9 @@ export function SocialPreview() {
                                                     placeholder="+ Add tag"
                                                     className="border-0 p-0 h-auto w-20 text-xs shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                                                     onKeyDown={(e) => {
-                                                        if (e.key === "Enter") {
-                                                            e.preventDefault()
-                                                            handleAddTag()
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleAddTag();
                                                         }
                                                     }}
                                                 />
@@ -123,15 +122,15 @@ export function SocialPreview() {
                                     </>
                                 ) : (
                                     <>
-                                        <h3 className="font-semibold text-base line-clamp-2">{title || "Untitled"}</h3>
-                                        <p className="text-sm text-muted-foreground line-clamp-2">{summary || "No summary"}</p>
+                                        <h3 className="font-semibold text-base line-clamp-2">{title || 'Untitled'}</h3>
+                                        <p className="text-sm text-muted-foreground line-clamp-2">
+                                            {summary || 'No summary'}
+                                        </p>
                                         <div className="flex flex-wrap gap-1 pt-1">
-                                            {tags.length === 0 && (
-                                                <span className="text-xs text-muted-foreground italic">
-                                                    No tags
-                                                </span>
+                                            {hashtags.length === 0 && (
+                                                <span className="text-xs text-muted-foreground italic">No tags</span>
                                             )}
-                                            {tags.map((tag) => (
+                                            {hashtags.map((tag) => (
                                                 <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">
                                                     {tag}
                                                 </Badge>
@@ -144,8 +143,8 @@ export function SocialPreview() {
                             <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-md bg-muted">
                                 {image ? (
                                     <>
-                                        <Image
-                                            src={image || "/placeholder.svg"} // placeholder if src is empty
+                                        <img
+                                            src={image || '/placeholder.svg'} // placeholder if src is empty
                                             alt="Hero image"
                                             width={80}
                                             height={80}
@@ -163,7 +162,7 @@ export function SocialPreview() {
                                 ) : (
                                     <Label
                                         htmlFor="image-upload"
-                                        className={`flex h-full w-full items-center justify-center ${isEditing ? "cursor-pointer" : "cursor-default"}`}
+                                        className={`flex h-full w-full items-center justify-center ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}
                                     >
                                         <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
                                     </Label>

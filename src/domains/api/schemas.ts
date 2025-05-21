@@ -1,10 +1,10 @@
-import { NDKEvent } from "@nostr-dev-kit/ndk-hooks";
-import { z } from "zod";
+import { NDKEvent } from '@nostr-dev-kit/ndk-hooks';
+import { z } from 'zod';
 
 /**
  * PostStatus type as used in the DB schema.
  */
-export const PostStatusEnum = z.enum(["draft", "scheduled", "published", "failed"]);
+export const PostStatusEnum = z.enum(['draft', 'scheduled', 'published', 'failed']);
 export type PostStatus = z.infer<typeof PostStatusEnum>;
 
 /**

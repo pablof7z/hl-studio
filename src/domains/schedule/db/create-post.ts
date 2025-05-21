@@ -3,10 +3,9 @@
  * Uses Drizzle ORM for SQLite.
  */
 
-import { posts, PostStatus } from "@/domains/db/schema";
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
-import { v4 as uuidv4 } from "uuid";
+import { posts, PostStatus } from '@/domains/db/schema';
+import { BunSQLiteDatabase, drizzle } from 'drizzle-orm/bun-sqlite';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * The shape of a new post to be created.
@@ -29,10 +28,7 @@ export interface NewPostInput {
  * @returns The created post row.
  * @throws Error if insertion fails.
  */
-export async function createPost(
-    db: BunSQLiteDatabase,
-    input: NewPostInput
-) {
+export async function createPost(db: BunSQLiteDatabase, input: NewPostInput) {
     const now = new Date().toISOString();
     const id = uuidv4();
     try {
@@ -49,11 +45,11 @@ export async function createPost(
                 publishError: input.publishError ?? null,
                 createdAt: now,
                 updatedAt: now,
-                rawEvent: input.rawEvent
+                rawEvent: input.rawEvent,
             })
             .returning();
         return row;
     } catch (err) {
-        throw new Error("Failed to create post: " + (err instanceof Error ? err.message : String(err)));
+        throw new Error('Failed to create post: ' + (err instanceof Error ? err.message : String(err)));
     }
 }

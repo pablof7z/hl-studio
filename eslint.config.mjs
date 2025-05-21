@@ -29,6 +29,7 @@ export default [
             'react/jsx-props-no-spreading': 'off',
             'react/no-unused-prop-types': 'off',
             'react/require-default-props': 'off',
+            'jsx-a11y/anchor-is-valid': 'off',
             'next/no-img-element': 'off',
 
             'import/extensions': [
@@ -71,9 +72,10 @@ export default [
             '@typescript-eslint/explicit-function-return-type': 'off',
             '@typescript-eslint/explicit-module-boundary-types': 'off',
             'no-use-before-define': [0],
+            '@typescript-eslint/no-unused-vars': 'off',
             '@typescript-eslint/no-use-before-define': [1],
-            '@typescript-eslint/no-explicit-any': 'off',
-            '@typescript-eslint/no-var-requires': 'off',
+            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/no-var-requires': 'warn',
         },
     },
 ];

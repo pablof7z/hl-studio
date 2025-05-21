@@ -1,5 +1,5 @@
-import { NDKArticle } from "@nostr-dev-kit/ndk";
+import { NDKArticle } from '@nostr-dev-kit/ndk';
 
 export type NDKArticleWithStatus = NDKArticle & {
-    status: "published" | "draft" | "scheduled";
-}
+    status: 'published' | 'draft' | 'scheduled';
+};

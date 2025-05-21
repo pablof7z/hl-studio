@@ -1,129 +1,103 @@
-"use client"
+'use client';
 
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
-import { format } from "date-fns"; // Import format
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { NostrEditor } from "@/components/editor/nostr-editor"
-import { ScheduleIndicator, type ScheduleIndicatorSettings } from "@/components/posts/schedule-indicator"
-import { NDKUser, useEvent } from "@nostr-dev-kit/ndk-hooks"
-import { NDKKind, NDKArticle } from "@nostr-dev-kit/ndk-hooks"
-import { SettingsModal, useEditorStore, useEditorPublish } from "@/features/long-form-editor"
-import { ConfirmationDialog } from "@/components/posts/ConfirmationDialog"; // Updated import
-import { SocialPreview } from "@/features/long-form-editor/components/SocialPreview"
-import { useAPI } from "@/domains/api"
-import { Input } from "@/components/ui/input";
+import { NostrEditor } from '@/components/editor/nostr-editor';
+import { ConfirmationDialog } from '@/components/posts/ConfirmationDialog';
+import { ScheduleIndicator, type ScheduleIndicatorSettings } from '@/components/posts/schedule-indicator';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useAPI } from '@/domains/api';
+import { SettingsModal, useEditorStore } from '@/features/long-form-editor';
+import { PostStatus } from '@/features/long-form-editor/components/PostStatus';
+import { SocialPreview } from '@/features/long-form-editor/components/SocialPreview';
+import NDK, { NDKArticle, NDKDraft, NDKEvent, NDKKind, NDKUser, useEvent, useNDK } from '@nostr-dev-kit/ndk-hooks';
+import { format } from 'date-fns';
 
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function LongFormPostPage() {
     const searchParams = useSearchParams();
-    const encodedId = searchParams.get("id") || undefined;
-
-    // Get store state and actions
-    const {
-        setContent,
-        title,
-        setTitle,
-        setSummary,
-        addZapSplit,
-        setTags,
-        setPublishedAt,
-        getEvents,
-        setImage,
-    } = useEditorStore();
+    const encodedId = searchParams.get('id') || undefined;
+    const [article, setArticle] = useState<NDKArticle | null>(null);
+    const { setContent, title, setTitle, restoreFromEvent, publishedAt, setPublishedAt, getEvents } =
+        useEditorStore();
 
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-    // Get publishing functions
-    const { publishArticle, saveAsDraft } = useEditorPublish();
-
     // Status state
-    const [status, setStatus] = useState("Draft");
-    const [scheduledDateTime, setScheduledDateTime] = useState<Date | null>(null);
     const api = useAPI();
 
     // Use the useEvent hook from ndk-hooks to fetch the event by encoded ID
-    const event = useEvent(encodedId || false);
+    const event = useEvent(encodedId || false, { wrap: true });
 
     useEffect(() => {
-        if (event) {
-            if (event.kind === NDKKind.Article) {
-                const article = NDKArticle.from(event);
-                setImage(article.image ?? null);
-                setContent(article.content ?? "");
-                setTitle(article.title ?? "");
-                setSummary(article.summary ?? "");
-                const zapSplits = article.tags.filter(tag => tag[0] === "zap");
-                zapSplits.forEach(tag => {
-                    const user = new NDKUser({ pubkey: tag[1] });
-                    const split = parseInt(tag[2], 10);
-                    addZapSplit(user, split);
-                });
-                setTags(article.tags || []);
-                if (article.published_at) {
-                    setPublishedAt(new Date(article.published_at * 1000));
-                    setStatus("Published") // Or determine based on date
+        if (event instanceof NDKArticle) {
+            setArticle(event);
+        } else if (event?.kind === NDKKind.Draft || event?.kind === NDKKind.DraftCheckpoint) {
+            const draft = NDKDraft.from(event);
+            draft.getEvent().then((article) => {
+                console.log('restoring with draft', article?.inspect);
+                if (article) {
+                    const _article = NDKArticle.from(article);
+                    restoreFromEvent(_article, draft);
+                    setArticle(_article);
                 }
-            } else {
-                setContent(event.content ?? "");
-            }
+            });
         }
-    }, [event, setContent, setTitle, setSummary, setTags, setPublishedAt]);
+    }, [event]);
+
+    const { ndk } = useNDK();
 
     const handlePublishOrSchedule = async (publishAt?: Date) => {
+        if (!ndk) throw new Error('NDK is not initialized');
+
+        const events = getEvents(ndk, publishAt);
+        
         if (publishAt) {
-            // This is a schedule action
             setPublishedAt(publishAt); // Update store with scheduled date
-            setStatus("Scheduled");
-            setScheduledDateTime(publishAt);
-            for (const event of getEvents(publishAt)) {
-                console.log("schedule:");
+            for (const event of events) {
+                console.log('schedule:');
+                await event.sign();
                 event.dump();
                 await api.addPost({
-                    scheduledAt: publishAt ? publishAt.toISOString() : "",
-                    status: "scheduled",
-                    rawEvent: JSON.stringify(event.rawEvent())
+                    scheduledAt: publishAt ? publishAt.toISOString() : '',
+                    status: 'scheduled',
+                    rawEvent: JSON.stringify(event.rawEvent()),
                 });
             }
         } else {
+            for (const event of events) {
+                event.publish();
+            }
+
             // This is a publish now action
             setPublishedAt(new Date()); // Update store with current date
-            publishArticle(); // This will use the latest state from useEditorStore
-            setStatus("Published");
-            setScheduledDateTime(null);
         }
         setIsConfirmDialogOpen(false);
     };
 
-
     const handleSaveAsDraftInternal = () => {
-        // Ensure store is up-to-date if there were unsaved changes in local component state
-        // (though in this setup, NostrEditor directly updates the store via onChange)
-        const article = saveAsDraft();
-        if (article) {
-            console.log("Draft saved:", article);
-            setStatus("Draft");
-        }
     };
 
     // Determine schedule settings for the ScheduleIndicator
     const scheduleIndicatorSettings: ScheduleIndicatorSettings | null =
-        status === "Scheduled" && scheduledDateTime
+        status === 'Scheduled' && publishedAt
             ? {
-                date: scheduledDateTime,
-                time: format(scheduledDateTime, "HH:mm"),
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                // Add placeholder/default values for missing properties
-                sendEmail: true, // Default or from a relevant state
-                audienceType: "all", // Default or from a relevant state
-                socialShare: { // Placeholder for socialShare
-                    twitter: false,
-                    linkedin: false,
-                    facebook: false,
-                },
-            }
+                  date: publishedAt,
+                  time: format(publishedAt, 'HH:mm'),
+                  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                  // Add placeholder/default values for missing properties
+                  sendEmail: true, // Default or from a relevant state
+                  audienceType: 'all', // Default or from a relevant state
+                  socialShare: {
+                      // Placeholder for socialShare
+                      twitter: false,
+                      linkedin: false,
+                      facebook: false,
+                  },
+              }
             : null;
 
     return (
@@ -137,11 +111,10 @@ export default function LongFormPostPage() {
                             </Link>
                         </Button>
                         <div className="flex items-center gap-2">
-                            <div
-                                className={`h-2 w-2 rounded-full ${status === "Draft" ? "bg-yellow-500" : status === "Scheduled" ? "bg-blue-500" : "bg-green-500"}`}
-                            ></div>
-                            <span className="text-sm font-medium">{status}</span>
-                            {scheduleIndicatorSettings && <ScheduleIndicator settings={scheduleIndicatorSettings} className="ml-2" />}
+                            <PostStatus />
+                            {scheduleIndicatorSettings && (
+                                <ScheduleIndicator settings={scheduleIndicatorSettings} className="ml-2" />
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -165,7 +138,7 @@ export default function LongFormPostPage() {
             </ConfirmationDialog>
 
             <main className="flex-1">
-                <NostrEditor event={event} onChange={setContent}>
+                <NostrEditor event={article} onChange={setContent}>
                     <Input
                         type="text"
                         placeholder="Title"
@@ -176,47 +149,11 @@ export default function LongFormPostPage() {
                 </NostrEditor>
             </main>
 
-            <footer className="border-t">
-                <div className="container mx-auto flex items-center justify-between h-14 px-4">
+            <footer className="border-t fixed bottom-0 bg-background w-full">
+                <div className="flex items-center justify-between h-14 px-4">
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={handleSaveAsDraftInternal}>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="h-4 w-4"
-                            >
-                                <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
-                                <path d="M12 8v4l3 3" />
-                            </svg>
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="h-4 w-4"
-                            >
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M12 16v-4" />
-                                <path d="M12 8h.01" />
-                            </svg>
-                        </Button>
                     </div>
-                    
-                    {/* Use our new SettingsModal component */}
+
                     <SettingsModal />
                 </div>
             </footer>

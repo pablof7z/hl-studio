@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { X } from "lucide-react"
-import { NDKUser } from "@nostr-dev-kit/ndk"
-import { useProfileValue } from "@nostr-dev-kit/ndk-hooks"
-import UserAvatar from "@/features/nostr/components/user/UserAvatar"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import UserAvatar from '@/features/nostr/components/user/UserAvatar';
+import { NDKUser } from '@nostr-dev-kit/ndk';
+import { useProfileValue } from '@nostr-dev-kit/ndk-hooks';
+import { X } from 'lucide-react';
+import { useState } from 'react';
 
 type ZapSplitRowProps = {
     user: NDKUser;
@@ -14,20 +14,20 @@ type ZapSplitRowProps = {
     sharePercent: number;
     onRemove: () => void;
     onUpdate: (split: number) => void;
-}
+};
 
 export function ZapSplitRow({ user, split, sharePercent, onRemove, onUpdate }: ZapSplitRowProps) {
-    const [editMode, setEditMode] = useState(false)
-    const [splitInput, setSplitInput] = useState(split.toString())
-    const profile = useProfileValue(user.pubkey)
+    const [editMode, setEditMode] = useState(false);
+    const [splitInput, setSplitInput] = useState(split.toString());
+    const profile = useProfileValue(user.pubkey);
 
     const handleSave = () => {
-        const newSplit = parseInt(splitInput, 10)
+        const newSplit = parseInt(splitInput, 10);
         if (!isNaN(newSplit) && newSplit > 0) {
-            onUpdate(newSplit)
-            setEditMode(false)
+            onUpdate(newSplit);
+            setEditMode(false);
         }
-    }
+    };
 
     return (
         <div className="flex items-center justify-between p-2 border rounded-md">
@@ -38,7 +38,7 @@ export function ZapSplitRow({ user, split, sharePercent, onRemove, onUpdate }: Z
                     <p className="text-xs text-muted-foreground">{user.npub.slice(0, 10)}...</p>
                 </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
                 {editMode ? (
                     <>
@@ -68,5 +68,5 @@ export function ZapSplitRow({ user, split, sharePercent, onRemove, onUpdate }: Z
                 </Button>
             </div>
         </div>
-    )
+    );
 }

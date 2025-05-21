@@ -1,4 +1,4 @@
-import { useEditorStore } from "@/domains/editor/stores/editorStore";
+import { useEditorStore } from '@/domains/editor/stores/editorStore';
 
 export function AudienceSelection() {
     const { isEarlyAccess } = useEditorStore();

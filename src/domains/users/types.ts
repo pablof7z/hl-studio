@@ -1,4 +1,4 @@
-import { NDKUser } from "@nostr-dev-kit/ndk";
+import { NDKUser } from '@nostr-dev-kit/ndk';
 
 export interface NostrUserSearchResult {
     users: NDKUser[];

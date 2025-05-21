@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 type DataTableProps<T> = {
     columns: { key: keyof T; label: string }[];
@@ -12,10 +12,7 @@ export function DataTable<T>({ columns, data, rowKey }: DataTableProps<T>) {
             <thead>
                 <tr>
                     {columns.map((col) => (
-                        <th
-                            key={String(col.key)}
-                            className="px-4 py-2 text-left bg-gray-50 font-semibold"
-                        >
+                        <th key={String(col.key)} className="px-4 py-2 text-left bg-gray-50 font-semibold">
                             {col.label}
                         </th>
                     ))}

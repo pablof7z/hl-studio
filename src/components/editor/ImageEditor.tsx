@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
 // Using simple SVG icons instead of @tabler/icons-react
+import { DeleteButton } from '@/components/ui/atoms/DeleteButton';
 import type { NodeViewProps } from '@tiptap/core';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { ImageAttributes } from 'nostr-editor';
-import { DeleteButton } from "@/components/ui/atoms/DeleteButton";
 
 /**
  * ImageEditor renders an image with upload status and controls.
@@ -13,7 +13,7 @@ import { DeleteButton } from "@/components/ui/atoms/DeleteButton";
 export function ImageEditor(props: NodeViewProps) {
     const { src, alt, uploadUrl, uploading, uploadError } = props.node.attrs as ImageAttributes;
     const isUploaded = !src.startsWith('blob:http');
-    
+
     return (
         <NodeViewWrapper
             data-drag-handle=""
@@ -34,17 +34,41 @@ export function ImageEditor(props: NodeViewProps) {
                     />
                 )}
                 {isUploaded && (
-                    <span data-tooltip={src} className="p-1 flex flex-row justify-between rounded-full border border-white/20 bg-black text-green-300 text-xs right-2 bottom-2 z-50">
+                    <span
+                        data-tooltip={src}
+                        className="p-1 flex flex-row justify-between rounded-full border border-white/20 bg-black text-green-300 text-xs right-2 bottom-2 z-50"
+                    >
                         {/* Check icon */}
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                     </span>
                 )}
                 {uploadError && (
-                    <span data-tooltip={uploadError} className="border border-white/20 bg-black rounded-full py-1 ml-1 text-red-500 relative top-0">
+                    <span
+                        data-tooltip={uploadError}
+                        className="border border-white/20 bg-black rounded-full py-1 ml-1 text-red-500 relative top-0"
+                    >
                         {/* X icon */}
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
@@ -57,13 +81,7 @@ export function ImageEditor(props: NodeViewProps) {
 
 // Simple Image component
 function Image({ src }: { src: string }) {
-    return (
-        <img 
-            src={src} 
-            alt="" 
-            className="max-w-full rounded-md object-cover"
-        />
-    );
+    return <img src={src} alt="" className="max-w-full rounded-md object-cover" />;
 }
 
 // AltButton component for editing alt text
@@ -72,7 +90,7 @@ function AltButton({ value, onChange }: { value: string; onChange: (value: strin
         <button
             type="button"
             onClick={() => {
-                const newAlt = prompt("Enter alt text for this image", value || "");
+                const newAlt = prompt('Enter alt text for this image', value || '');
                 if (newAlt !== null) {
                     onChange(newAlt);
                 }
@@ -85,12 +103,12 @@ function AltButton({ value, onChange }: { value: string; onChange: (value: strin
 }
 
 // UploadChip component for selecting upload service
-function UploadChip({ 
-    uploadUrl, 
-    onChange 
-}: { 
-    uploadUrl: string; 
-    onChange: (uploadType: string, uploadUrl: string) => void 
+function UploadChip({
+    uploadUrl,
+    onChange,
+}: {
+    uploadUrl: string;
+    onChange: (uploadType: string, uploadUrl: string) => void;
 }) {
     return (
         <div className="flex items-center ml-2">
@@ -116,10 +134,7 @@ function UploadingProgress() {
     return (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-md">
             <div className="w-3/4 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                <div
-                    className="bg-blue-600 h-2.5 rounded-full animate-pulse"
-                    style={{ width: '75%' }}
-                ></div>
+                <div className="bg-blue-600 h-2.5 rounded-full animate-pulse" style={{ width: '75%' }}></div>
             </div>
         </div>
     );
@@ -127,9 +142,5 @@ function UploadingProgress() {
 
 // MediaFooter component
 function MediaFooter({ children }: { children: React.ReactNode }) {
-    return (
-        <div className="absolute bottom-2 left-2 flex flex-row items-center gap-2 z-10">
-            {children}
-        </div>
-    );
+    return <div className="absolute bottom-2 left-2 flex flex-row items-center gap-2 z-10">{children}</div>;
 }

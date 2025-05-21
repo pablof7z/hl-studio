@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState, KeyboardEvent } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { MentionSearchResultsUsers } from "./MentionSearchResultsUsers";
-import { MentionSearchResultsEvent } from "./MentionSearchResultsEvent";
-import { useNDK, useEvent } from "@nostr-dev-kit/ndk-hooks";
-import { NDKUser, NDKEvent } from "@nostr-dev-kit/ndk";
-import { useNostrUserSearch } from "@/domains/users/hooks/useNostrUserSearch";
-import { MentionEntity } from "../types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useNostrUserSearch } from '@/domains/users/hooks/useNostrUserSearch';
+import { NDKEvent, NDKUser } from '@nostr-dev-kit/ndk';
+import { useEvent, useNDK } from '@nostr-dev-kit/ndk-hooks';
+import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { MentionEntity } from '../types';
+import { MentionSearchResultsEvent } from './MentionSearchResultsEvent';
+import { MentionSearchResultsUsers } from './MentionSearchResultsUsers';
 
 interface MentionModalProps {
     open: boolean;
@@ -15,26 +15,19 @@ interface MentionModalProps {
 }
 
 export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onClose }) => {
-    const [query, setQuery] = useState("");
+    const [query, setQuery] = useState('');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // If the query is a nostr event id, fetch the event
-    const isEventQuery =
-        query.startsWith("note1") ||
-        query.startsWith("nevent1") ||
-        query.startsWith("naddr1");
-    const isUserQuery =
-        query.startsWith("npub1") ||
-        query.startsWith("nprofile1");
+    const isEventQuery = query.startsWith('note1') || query.startsWith('nevent1') || query.startsWith('naddr1');
+    const isUserQuery = query.startsWith('npub1') || query.startsWith('nprofile1');
 
     // User search (for all queries except event ids)
-    const { users } = useNostrUserSearch(
-        !isEventQuery && query.length > 1 ? query : ""
-    );
+    const { users } = useNostrUserSearch(!isEventQuery && query.length > 1 ? query : '');
 
     // Event fetch (for note1/nevent1/naddr1)
-    const event = useEvent(isEventQuery ? query : "");
+    const event = useEvent(isEventQuery ? query : '');
 
     // Focus input when modal opens
     useEffect(() => {
@@ -43,7 +36,7 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
                 inputRef.current?.focus();
             }, 0);
         } else {
-            setQuery("");
+            setQuery('');
             setSelectedIndex(0);
         }
     }, [open]);
@@ -51,29 +44,29 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
     // Keyboard navigation
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (!isEventQuery && users.length > 0) {
-            if (e.key === "ArrowDown") {
+            if (e.key === 'ArrowDown') {
                 setSelectedIndex((prev) => (prev + 1) % users.length);
                 e.preventDefault();
-            } else if (e.key === "ArrowUp") {
+            } else if (e.key === 'ArrowUp') {
                 setSelectedIndex((prev) => (prev - 1 + users.length) % users.length);
                 e.preventDefault();
-            } else if (e.key === "Enter") {
-                onSelect?.({ type: "user", user: users[selectedIndex] });
+            } else if (e.key === 'Enter') {
+                onSelect?.({ type: 'user', user: users[selectedIndex] });
                 handleClose();
             }
-        } else if (isEventQuery && event && e.key === "Enter") {
-            onSelect?.({ type: "event", event, identifier: query });
+        } else if (isEventQuery && event && e.key === 'Enter') {
+            onSelect?.({ type: 'event', event, identifier: query });
             handleClose();
         }
     };
 
     const handleSelectUser = (user: NDKUser, index: number) => {
-        onSelect?.({ type: "user", user });
+        onSelect?.({ type: 'user', user });
         handleClose();
     };
 
     const handleSelectEvent = (event: NDKEvent) => {
-        onSelect?.({ type: "event", event, identifier: query });
+        onSelect?.({ type: 'event', event, identifier: query });
         handleClose();
     };
 
@@ -88,11 +81,9 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
                     <Input
                         id="mention-search-input"
                         ref={inputRef}
-                        placeholder={
-                            "Search by name, npub1, or paste note1/nevent1/naddr1"
-                        }
+                        placeholder={'Search by name, npub1, or paste note1/nevent1/naddr1'}
                         value={query}
-                        onChange={e => setQuery(e.target.value)}
+                        onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
                         className="w-full !text-xl p-0 border-none !ring-0"
                         autoComplete="off"
@@ -100,10 +91,7 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
                     />
                     <div className="flex-1 grow w-full">
                         {isEventQuery ? (
-                            <MentionSearchResultsEvent
-                                event={event}
-                                onSelectEvent={handleSelectEvent}
-                            />
+                            <MentionSearchResultsEvent event={event} onSelectEvent={handleSelectEvent} />
                         ) : (
                             <MentionSearchResultsUsers
                                 users={users}

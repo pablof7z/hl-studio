@@ -1,12 +1,15 @@
-import { NDKArticle } from "@nostr-dev-kit/ndk-hooks";
-import { useArticlesStore } from "../stores/articlesStore";
-import { useAPI } from "@/domains/api/hooks/useAPI";
-import { PostStatusEnum } from "@/domains/api/schemas";
+import { useAPI } from '@/domains/api/hooks/useAPI';
+import { NDKArticle, NDKEvent, NDKKind } from '@nostr-dev-kit/ndk-hooks';
+import { useArticlesStore } from '../stores/articlesStore';
+import { useDraftStore } from '@/features/drafts/stores';
+import { useMemo } from 'react';
 
 type ArticleWithStatus = {
     article: NDKArticle;
+    event: NDKEvent;
+    created_at: number;
     status: string;
-}
+};
 
 /**
  * useArticles hook
@@ -17,43 +20,45 @@ type ArticleWithStatus = {
  */
 export function useArticles({ includeDeleted } = { includeDeleted: false }): ArticleWithStatus[] {
     const published = useArticlesStore((state) => state.published);
-    const drafts = useArticlesStore((state) => state.drafts);
+    const drafts = useDraftStore((state) => state.items);
+    console.log('[useArticles] drafts', Object.keys(drafts).length);
+    const draftArticles = useMemo(() => {
+        return Object.values(drafts)
+            .map((versions) => versions[0])
+            .filter((item) => !item.draft.hasTag("deleted"))
+            .filter((item) => item.innerEvent.kind === NDKKind.Article)
+            .map(({ innerEvent, draft }) => (
+                { article: innerEvent, event: draft, created_at: draft.created_at, status: 'draft' }
+            ));
+    }, [drafts]);
 
     // Fetch scheduled posts from API
     const api = useAPI();
-    const {data: scheduledPosts} = api.getPosts();
-
-    console.log("scheduledPosts", scheduledPosts);
+    const { data: scheduledPosts } = api.getPosts();
 
     // Published articles
-    const publishedArticles = [];
+    const publishedArticles: ArticleWithStatus[] = [];
     for (const article of published) {
-        const deleted = article.hasTag("deleted");
+        const deleted = article.hasTag('deleted');
         if (includeDeleted && deleted) {
-            publishedArticles.push({ article, status: "archived" });
+            publishedArticles.push({ article, event: article, created_at: article.created_at, status: 'archived' });
         } else if (!deleted) {
-            publishedArticles.push({ article, status: "published" });
+            publishedArticles.push({ article, event: article, created_at: article.created_at, status: 'published' });
         }
     }
 
-    // Draft articles
-    const draftArticles = drafts.map((article) => ({ article, status: "draft" }));
-
     // Scheduled articles from API
-    const scheduledArticles =
-        Array.isArray(scheduledPosts)
-            ? scheduledPosts.map((post) => {
-                console.log("scheduled post", post?.event?.inspect);
-                return { article: post.event, status: "scheduled" };
-            })
-            : [];
+    // const scheduledArticles = Array.isArray(scheduledPosts)
+    //     ? scheduledPosts.map((post) => {
+    //           console.log('scheduled post', post?.event?.inspect);
+    //           return { article: post.event, status: 'scheduled' };
+    //       })
+    //     : [];
 
     // Merge and sort all articles by created_at descending
-    return [...publishedArticles, ...draftArticles, ...scheduledArticles].sort(
-        (a, b) => {
-            const aDate = a.created_at || a.scheduledAt || 0;
-            const bDate = b.created_at || b.scheduledAt || 0;
-            return bDate - aDate;
-        }
-    );
+    return [...publishedArticles, ...draftArticles].sort((a, b) => {
+        const aDate = a.created_at || a.scheduledAt || 0;
+        const bDate = b.created_at || b.scheduledAt || 0;
+        return bDate - aDate;
+    });
 }
