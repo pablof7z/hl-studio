@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -14,7 +13,6 @@ import { TimePickerDemo } from './time-picker'; // Correct relative path
 export interface ConfirmationDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    hasPaidPlan?: boolean;
     onPublish: () => void;
     onSchedule: (publishAt: Date) => void;
     children?: React.ReactNode;
@@ -23,7 +21,6 @@ export interface ConfirmationDialogProps {
 export function ConfirmationDialog({
     open,
     onOpenChange,
-    hasPaidPlan = false,
     onPublish,
     onSchedule,
     children,
@@ -31,7 +28,6 @@ export function ConfirmationDialog({
     const [date, setDate] = useState<Date | undefined>(undefined);
     const [time, setTime] = useState<string>('09:00');
     const [isScheduled, setIsScheduled] = useState(false);
-    const [audience, setAudience] = useState<'all' | 'subscribers'>('all');
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -39,7 +35,6 @@ export function ConfirmationDialog({
             setDate(undefined);
             setTime('09:00');
             setIsScheduled(false);
-            setAudience('all');
         }
     }, [open]);
 
@@ -53,13 +48,14 @@ export function ConfirmationDialog({
                 const scheduleDateTime = new Date(date);
                 const [hours, minutes] = time.split(':').map(Number);
                 scheduleDateTime.setHours(hours, minutes, 0, 0);
-                if (onSchedule) onSchedule(scheduleDateTime);
+                onSchedule(scheduleDateTime);
             } else {
                 setError('Date and time must be set for scheduling.');
                 return;
             }
+        } else {
+            onPublish();
         }
-        onPublish();
         onOpenChange(false);
     };
 
@@ -67,7 +63,7 @@ export function ConfirmationDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-3xl">
                 <DialogHeader>
-                    <DialogTitle className="text-xl">Publish Article</DialogTitle>
+                    <DialogTitle className="text-xl">Publish</DialogTitle>
                 </DialogHeader>
                 {error && <div className="mb-2 text-sm text-red-600">{error}</div>}
                 <div className="grid gap-6 py-4">
@@ -93,7 +89,7 @@ export function ConfirmationDialog({
                                     <RadioGroupItem value="schedule" id="schedule" className="mt-1" />
                                     <div className="space-y-2">
                                         <Label htmlFor="schedule" className="font-normal">
-                                            Schedule for later
+                                            Schedule for later {date?.toString()} {time.split(':').map(Number).join(':')}
                                         </Label>
 
                                         {isScheduled && (
@@ -175,7 +171,7 @@ export function ConfirmationDialog({
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit}>{(isScheduled ? 'Schedule' : 'Publish') + ' Article'}</Button>
+                    <Button onClick={handleSubmit}>{(isScheduled ? 'Schedule' : 'Publish')}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

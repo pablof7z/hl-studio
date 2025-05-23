@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { NDKKind, NDKZapper, zapInvoiceFromEvent, type NDKEvent, type NDKNutzap } from '@nostr-dev-kit/ndk';
-import { useNDK, useNDKCurrentUser, useProfile, useSubscribe } from '@nostr-dev-kit/ndk-hooks';
+import { useNDK, useNDKCurrentUser, useProfileValue, useSubscribe } from '@nostr-dev-kit/ndk-hooks';
 import { Check, Copy, Zap } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -342,7 +342,7 @@ export function ZapButton({ event, className, showAmount = true }: ZapButtonProp
 
 // Helper component to display recipient avatars
 function RecipientAvatar({ pubkey }: { pubkey: string }) {
-    const profile = useProfile(pubkey);
+    const profile = useProfileValue(pubkey);
     const displayName = profile?.displayName || profile?.name || pubkey.substring(0, 8) + '...';
 
     return (

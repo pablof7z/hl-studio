@@ -20,6 +20,9 @@ importers:
       '@nostr-dev-kit/ndk':
         specifier: ^2.14.15
         version: 2.14.15(nostr-tools@2.13.0(typescript@5.8.3))
+      '@nostr-dev-kit/ndk-blossom':
+        specifier: ^0.1.17
+        version: 0.1.17(@nostr-dev-kit/ndk@2.14.15(nostr-tools@2.13.0(typescript@5.8.3)))
       '@nostr-dev-kit/ndk-hooks':
         specifier: ^1.1.41
         version: 1.1.41(@cashu/cashu-ts@2.5.2)(@cashu/crypto@0.3.4)(@types/react@18.3.21)(nostr-tools@2.13.0(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))
@@ -1647,6 +1650,12 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@nostr-dev-kit/ndk-blossom@0.1.17':
+    resolution: {integrity: sha512-tk1t/AOg0UpMFVH0b2T7OtYedzRHRwSLfH5+SM+FlwpKBSJL/j8qXCQlMCRKDKUMzx3PFWE5vqFTW2v7A+H9SQ==}
+    engines: {node: '>=16.0'}
+    peerDependencies:
+      '@nostr-dev-kit/ndk': 2.14.18
 
   '@nostr-dev-kit/ndk-hooks@1.1.41':
     resolution: {integrity: sha512-cGLNTvC06d2Pw5FGSAobhScBzou7oR9nH3Hc4BBJQg1Qa88SuHQz462vOi1Mdn12cgJjcqh26tgR5w1QFi1sZQ==}
@@ -8616,6 +8625,10 @@ snapshots:
       fastq: 1.19.1
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@nostr-dev-kit/ndk-blossom@0.1.17(@nostr-dev-kit/ndk@2.14.15(nostr-tools@2.13.0(typescript@5.8.3)))':
+    dependencies:
+      '@nostr-dev-kit/ndk': 2.14.15(nostr-tools@2.13.0(typescript@5.8.3))
 
   '@nostr-dev-kit/ndk-hooks@1.1.41(@cashu/cashu-ts@2.5.2)(@cashu/crypto@0.3.4)(@types/react@18.3.21)(nostr-tools@2.13.0(typescript@5.8.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(use-sync-external-store@1.5.0(react@18.3.1))':
     dependencies:

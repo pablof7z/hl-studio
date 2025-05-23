@@ -1,54 +1,63 @@
 'use client';
 
-import { ThreadPost } from '@/components/posts/thread-editor/thread-post';
-import { ThreadSidebar } from '@/components/posts/thread-editor/thread-sidebar';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
-
-export interface Post {
-    id: string;
-    content: string;
-    images: string[];
-}
+import { ConfirmationDialog } from '@/components/posts/ConfirmationDialog';
+import { ThreadPost } from './ThreadPost';
+import { ThreadSidebar } from './ThreadSidebar';
+import { useThreadPosts } from '../hooks/useThreadPosts';
+import { useThreadDraftPersistence } from '../hooks/useThreadDraftPersistence';
+import type { Post } from '../types';
 
 export function ThreadEditor() {
-    const [posts, setPosts] = useState<Post[]>([{ id: '1', content: '', images: [] }]);
-    const [activePostId, setActivePostId] = useState<string>('1');
+    const {
+        posts,
+        activePostId,
+        addPost,
+        updatePost,
+        addImageToPost,
+        removePost,
+        setActivePostId,
+        setPosts,
+    } = useThreadPosts();
 
-    const addPost = () => {
-        const newPost: Post = {
-            id: Date.now().toString(),
-            content: '',
-            images: [],
-        };
-        setPosts([...posts, newPost]);
-        setActivePostId(newPost.id);
-    };
+    // Persistence hook
+    const { restoreDraft, resetDraft, hasDraft } = useThreadDraftPersistence(
+        posts,
+        activePostId,
+        setPosts,
+        setActivePostId
+    );
 
-    const updatePost = (id: string, content: string) => {
-        setPosts(posts.map((post) => (post.id === id ? { ...post, content } : post)));
-    };
-
-    const addImageToPost = (id: string, imageUrl: string) => {
-        setPosts(posts.map((post) => (post.id === id ? { ...post, images: [...post.images, imageUrl] } : post)));
-    };
-
-    const removePost = (id: string) => {
-        if (posts.length > 1) {
-            const newPosts = posts.filter((post) => post.id !== id);
-            setPosts(newPosts);
-            if (activePostId === id) {
-                setActivePostId(newPosts[0].id);
-            }
+    // On mount, restore draft if present
+    useEffect(() => {
+        if (hasDraft) {
+            restoreDraft();
         }
+        // Only run on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+    const handlePublishOrSchedule = () => {
+        // Intentionally left empty
     };
 
     return (
         <div className="flex h-screen overflow-hidden bg-background">
             <ThreadSidebar />
+
+            <ConfirmationDialog
+                open={isConfirmDialogOpen}
+                onOpenChange={setIsConfirmDialogOpen}
+                onPublish={handlePublishOrSchedule}
+                onSchedule={handlePublishOrSchedule}
+            >
+                {/* <SocialPreview /> */}
+            </ConfirmationDialog>
 
             <div className="flex flex-1 flex-col">
                 <div className="flex items-center justify-between border-b p-4">
@@ -66,8 +75,16 @@ export function ThreadEditor() {
                         </Tabs>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="default" size="sm">
+                        <Button variant="default" size="sm" onClick={() => setIsConfirmDialogOpen(true)}>
                             {'Continue'}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={resetDraft}
+                            style={{ marginLeft: 8 }}
+                        >
+                            Reset
                         </Button>
                     </div>
                 </div>

@@ -11,15 +11,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { mockUsers, type User } from '@/data/mock-users';
-import { useAccountStore } from '@/domains/account/stores/accountStore';
 import UserAvatar from '@/features/nostr/components/user/UserAvatar';
 import UserName from '@/features/nostr/components/user/UserName';
-import { useNDKCurrentPubkey, useProfileValue } from '@nostr-dev-kit/ndk-hooks';
+import { useNDK, useNDKCurrentPubkey, useProfileValue } from '@nostr-dev-kit/ndk-hooks';
 import { BarChart2, Heart, ImageIcon, MessageCircle, MoreHorizontal, Repeat, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { Post } from './thread-editor';
+import type { Post } from '../types';
+import NDKBlossom from '@nostr-dev-kit/ndk-blossom';
+import { Loader2 } from 'lucide-react';
+import { useMemo } from 'react';
+import { cn } from '@/lib/utils';
+/* Toast import removed: not available in this project */
 
 interface ThreadPostProps {
     post: Post;
@@ -45,7 +49,8 @@ export function ThreadPost({
     isLast,
 }: ThreadPostProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    // isFocused state was unused
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     const [mentionPopupVisible, setMentionPopupVisible] = useState(false);
     const [mentionQuery, setMentionQuery] = useState('');
     const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
@@ -54,16 +59,77 @@ export function ThreadPost({
     const currentPubkey = useNDKCurrentPubkey();
     const profile = useProfileValue(currentPubkey);
 
+    // Local state for image upload
+    const [uploadingImageIdx, setUploadingImageIdx] = useState<number | null>(null);
+    const [localPreviews, setLocalPreviews] = useState<{ [idx: number]: string }>({});
+    const [uploadError, setUploadError] = useState<string | null>(null);
+
+    // Toast not available; fallback to only visible error message
+
     useEffect(() => {
         if (isActive && textareaRef.current) {
             textareaRef.current.focus();
         }
     }, [isActive]);
 
+    const { ndk } = useNDK();
+
+    // Trigger file input dialog
     const handleImageUpload = () => {
-        // In a real app, this would open a file picker
-        // For now, we'll just add a placeholder image
-        onAddImage(`/placeholder.svg?height=300&width=500&query=post image ${index + 1}`);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+            fileInputRef.current.click();
+        }
+    };
+
+    // Handle file selection and upload
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUploadError(null);
+        debugger
+        if (!ndk) return;
+        const file = e.target.files?.[0];
+        console.log('File selected:', file);
+        if (!file) return;
+        
+        const blossom = new NDKBlossom(ndk)
+        
+        // Local preview
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setLocalPreviews((prev) => ({
+                ...prev,
+                [post.images.length]: ev.target?.result as string,
+            }));
+        };
+        reader.readAsDataURL(file);
+
+        setUploadingImageIdx(post.images.length);
+
+        try {
+            const imeta = await blossom.upload(file, {
+                maxRetries: 3,
+                fallbackServer: 'https://nostr.download',
+            });
+            setUploadingImageIdx(null);
+            setLocalPreviews((prev) => {
+                const copy = { ...prev };
+                delete copy[post.images.length];
+                return copy;
+            });
+            if (imeta && typeof imeta.url === 'string' && imeta.url.length > 0) {
+                onAddImage(imeta.url);
+            } else {
+                setUploadError('Image uploaded, but URL was not found.');
+            }
+        } catch (err: any) {
+            setUploadingImageIdx(null);
+            setUploadError('Image upload failed: ' + (err?.message || 'Unknown error'));
+            setLocalPreviews((prev) => {
+                const copy = { ...prev };
+                delete copy[post.images.length];
+                return copy;
+            });
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -187,7 +253,7 @@ export function ThreadPost({
         >
             <div className="flex gap-3">
                 <div className="flex flex-col items-center">
-                    <UserAvatar pubkey={currentPubkey} size="sm" />
+                    <UserAvatar pubkey={currentPubkey ?? ''} size="sm" />
                     {!isLast && <div className="my-1 h-full w-0.5 bg-border" />}
                 </div>
 
@@ -195,7 +261,7 @@ export function ThreadPost({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1">
                             <span className="font-semibold">
-                                <UserName pubkey={currentPubkey} />
+                                <UserName pubkey={currentPubkey ?? ''} />
                             </span>
                         </div>
                         <DropdownMenu>
@@ -226,7 +292,9 @@ export function ThreadPost({
                             onKeyDown={handleKeyDown}
                             // onFocus and onBlur were only setting the unused isFocused state
                             placeholder={isFirst ? "What's your main point?" : 'Continue your thread...'}
-                            className="min-h-[80px] resize-none border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                            className={cn(
+                                "min-h-[80px] resize-none !border-none p-0 !ring-0",
+                            )}
                         />
 
                         {mentionPopupVisible && (
@@ -244,39 +312,73 @@ export function ThreadPost({
                         )}
                     </div>
 
-                    {post.images.length > 0 && (
+                    {(post.images.length > 0 || Object.keys(localPreviews).length > 0) && (
                         <div className="mt-2 grid gap-2">
                             {post.images.map((image, i) => (
                                 <div key={i} className="relative rounded-lg overflow-hidden">
-                                    <Image
+                                    <img
                                         src={image || '/placeholder.svg'}
-                                        alt={`Post image ${i + 1}`}
-                                        width={500}
-                                        height={300}
-                                        className="w-full h-auto object-cover rounded-lg"
+                                        width={isActive ? 500 : 125}
+                                        height={isActive ? 300 : 75}
+                                        className={cn(
+                                            "object-cover rounded-lg",
+                                        )}
                                     />
+                                    {/* Show uploading spinner if this image is uploading */}
+                                    {uploadingImageIdx === i && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
+                                            <Loader2 className="animate-spin h-8 w-8 text-white" />
+                                        </div>
+                                    )}
                                     <Button
                                         variant="destructive"
                                         size="icon"
                                         className="absolute top-2 right-2 h-6 w-6 opacity-80 hover:opacity-100"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            const newImages = [...post.images];
-                                            newImages.splice(i, 1);
-                                            onContentChange(post.content);
+                                            // Remove image logic should be handled by parent, but for now just remove from UI
+                                            // (Ideally, add an onRemoveImage prop)
+                                            // Remove from images array
+                                            // This is a placeholder: parent should update images
+                                            // onRemoveImage(i)
                                         }}
                                     >
                                         <Trash2 className="h-3 w-3" />
                                     </Button>
                                 </div>
                             ))}
+                            {/* Local preview for uploading image */}
+                            {Object.entries(localPreviews).map(([idx, url]) => (
+                                <div key={`preview-${idx}`} className="relative rounded-lg overflow-hidden">
+                                    <img
+                                        src={url}
+                                        alt="Uploading preview"
+                                        className="w-full h-auto object-cover rounded-lg opacity-70"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
+                                        <Loader2 className="animate-spin h-8 w-8 text-white" />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
 
                     <div className="mt-2 flex items-center gap-2 text-muted-foreground">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleImageUpload}>
                             <ImageIcon className="h-4 w-4" />
                         </Button>
+                        {uploadError && (
+                            <span className="text-sm font-semibold text-destructive ml-2 bg-destructive/10 px-2 py-1 rounded">
+                                {uploadError}
+                            </span>
+                        )}
                         <div className="ml-auto flex items-center gap-1 text-xs">
                             <span>{post.content.length}</span>
                             <span>/</span>

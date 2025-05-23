@@ -35,6 +35,8 @@ export const createDraftSlice: StateCreator<any, [], [], DraftSlice> = (set, get
     saveDraft: async (manual: boolean) => {
         const { ndk, draft, getEvent, autosaveTimer } = get();
 
+        if (!ndk) throw new Error('NDK is not initialized');
+
         if (autosaveTimer) clearTimeout(autosaveTimer);
         
         const event = getEvent(ndk);

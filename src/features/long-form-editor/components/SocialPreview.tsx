@@ -2,29 +2,31 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import NDKBlossom from "@nostr-dev-kit/ndk-blossom";
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useEditorStore } from '@/features/long-form-editor';
 import UserAvatar from '@/features/nostr/components/user/UserAvatar';
 import UserName from '@/features/nostr/components/user/UserName';
-import { useNDKCurrentPubkey } from '@nostr-dev-kit/ndk-hooks';
+import { useNDK, useNDKCurrentPubkey } from '@nostr-dev-kit/ndk-hooks';
 import { Edit, ImageIcon, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-export function SocialPreview() {
-    const [isEditing, setIsEditing] = useState(false);
+export function SocialPreview({ edit }: { edit?: boolean }) {
+    const [isEditing, setIsEditing] = useState(edit);
     const [newTag, setNewTag] = useState('');
     const currentPubkey = useNDKCurrentPubkey();
     // Use the editor store directly
-    const { title, setTitle, summary, setSummary, tags, setTags } = useEditorStore();
+    const { title, setTitle, summary, setSummary, tags, setTags, setUploadingImage } = useEditorStore();
     const hashtags = useMemo(() => (
         tags.filter((t: string[]) => t[0] === 't').map(t => t[1])
     ), [tags]);
+    const { ndk } = useNDK();
 
     // For hero image, keep in editor store via a custom field
-    const [image, setImage] = useEditorStore((s) => [s.image, s.setImage] as [string, (img: string) => void]);
+    const { image, setImage } = useEditorStore();
 
     const handleAddTag = () => {
             setTags([...tags, ["t", newTag]]);
@@ -35,32 +37,36 @@ export function SocialPreview() {
         setTags(tags.filter((tag) => tag[0] === 't' && tag[1] !== tagToRemove));
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!ndk) return;
+
         const file = e.target.files?.[0];
+        const blossom = new NDKBlossom(ndk);
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
                 setImage(reader.result as string);
             };
             reader.readAsDataURL(file);
+            
+            try {
+                setUploadingImage(true);
+                const imeta = await blossom.upload(file, { maxRetries: 3, server: 'https://nostr.download' });
+                console.log('Image uploaded:', imeta);
+                if (imeta?.url) setImage(imeta.url);
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                setImage(null);
+            } finally {
+                setUploadingImage(false);
+            }
         }
     };
 
     return (
         <div className="space-y-4">
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Social Preview</h3>
-                    <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                        {isEditing ? (
-                            'Done'
-                        ) : (
-                            <>
-                                <Edit className="mr-2 h-4 w-4" /> Edit
-                            </>
-                        )}
-                    </Button>
-                </div>
+                <h3 className="text-lg font-medium">Social Preview</h3>
 
                 <Card className="overflow-hidden border shadow-sm">
                     <CardContent className="p-4">
@@ -180,6 +186,15 @@ export function SocialPreview() {
                         </div>
                     </CardContent>
                 </Card>
+                <Button variant={isEditing ? "default" : "outline"} size="sm" onClick={() => setIsEditing(!isEditing)}>
+                        {isEditing ? (
+                            'Done'
+                        ) : (
+                            <>
+                                <Edit className="mr-2 h-4 w-4" /> Edit
+                            </>
+                        )}
+                    </Button>
             </div>
         </div>
     );

@@ -5,6 +5,7 @@ import { AuthGate } from '@/components/AuthGate';
 import { useArticlesStore } from '@/domains/articles';
 import { useDraftStore } from '@/features/drafts/stores';
 import { useEditorStore } from '@/features/long-form-editor';
+import { useScheduleStore } from '@/features/schedules/stores';
 import { getRelayUrls } from '@/ndk';
 import {
     NDKHeadless,
@@ -28,6 +29,7 @@ export default function RootLayout({
     const currentPubkey = useNDKCurrentPubkey();
     const articleStoreInit = useArticlesStore((s) => s.init);
     const draftStoreInit = useDraftStore((s) => s.init);
+    const scheduleStoreInit = useScheduleStore((s) => s.init);
     const editorStoreInit = useEditorStore((s) => s.init);
     const { ndk } = useNDK();
     const login = useNDKSessionLogin();
@@ -47,6 +49,7 @@ export default function RootLayout({
         if (ndk && currentPubkey) {
             articleStoreInit(ndk, currentPubkey);
             draftStoreInit(ndk, currentPubkey);
+            scheduleStoreInit(ndk, currentPubkey);
             editorStoreInit(ndk);
         }
     }, [currentPubkey]);

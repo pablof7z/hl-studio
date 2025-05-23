@@ -7,7 +7,10 @@ export interface MetadataSlice {
     tags: NDKTag[];
     image: string | null;
     publishedAt: Date | null;
+    uploadingImage: boolean;
+    
     setTitle: (title: string) => void;
+    setUploadingImage: (uploading: boolean) => void;
     setSummary: (summary: string) => void;
     setTags: (tags: NDKTag[]) => void;
     addTag: (tag: NDKTag | string) => void;
@@ -20,6 +23,7 @@ export const createMetadataSlice: StateCreator<MetadataSlice, [], [], MetadataSl
     summary: '',
     tags: [],
     image: null,
+    uploadingImage: false,
     publishedAt: null,
     setTitle: (title: string) => {
         console.log('Setting title:', title);
@@ -41,5 +45,8 @@ export const createMetadataSlice: StateCreator<MetadataSlice, [], [], MetadataSl
     },
     setPublishedAt: (date: Date | null) => {
         set({ publishedAt: date });
-    }
+    },
+    setUploadingImage: (uploading: boolean) => {
+        set({ uploadingImage: uploading });
+    },
 });

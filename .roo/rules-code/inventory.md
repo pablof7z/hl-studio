@@ -180,19 +180,15 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
             - useFeedFilters.ts
         - stores/
             - feedUiStore.ts
-    - login/
-        - index.ts
+    - thread-editor/
         - components/
-            - AuthError.tsx
-            - BunkerForm.tsx
-            - LoginScreen.tsx
-            - Nip07Button.tsx
-            - NostrConnectForm.tsx
-            - NsecForm.tsx
+            - ThreadEditor.tsx
+            - ThreadPost.tsx
+            - ThreadSidebar.tsx
         - hooks/
-            - useLoginUi.ts
-        - stores/
-            - loginUiStore.ts
+            - useThreadPosts.ts
+            - useThreadDraftPersistence.ts
+        - types.ts
 - hooks/
     - use-mobile.tsx
     - use-toast.ts
@@ -225,3 +221,4 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
 - NDK is instantiated as a singleton in `src/ndk/index.ts` and booted in `src/app/layout.tsx`.
 - All hooks use the `useCamel` naming convention, and components use PascalCase.
 - All files use 4-space indentation and strict TypeScript.
+- Thread editor now supports local draft persistence: `useThreadDraftPersistence.ts` handles saving/restoring/resetting thread drafts in localStorage, integrated into `ThreadEditor.tsx`.

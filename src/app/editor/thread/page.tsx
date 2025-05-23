@@ -1,4 +1,4 @@
-import { ThreadEditor } from '@/components/posts/thread-editor/thread-editor';
+import { ThreadEditor } from '@/features/thread-editor';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -33,14 +33,16 @@ export const useArticlesStore = create<ArticlesStoreState>((set) => ({
     published: [],
 
     init: (ndk, pubkey) => {
+        console.log('Initializing articles store');
         // articles
         ndk.subscribe(
             [{ kinds: [NDKKind.Article], authors: [pubkey] }],
             { wrap: true },
             {
                 onEvents: (events) => {
+                    console.log('Articles', events);
                     set((state) => ({
-                        published: mergeArticlesByTagId(state.published, events as NDKArticle[]),
+                        published: mergeArticlesByTagId(state.published, events.map((e) => NDKArticle.from(e))),
                     }));
                 },
                 onEvent: (event) => {

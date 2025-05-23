@@ -5,11 +5,12 @@ import { ConfirmationDialog } from '@/components/posts/ConfirmationDialog';
 import { ScheduleIndicator, type ScheduleIndicatorSettings } from '@/components/posts/schedule-indicator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAPI } from '@/domains/api';
+import { usePostScheduler } from '@/domains/schedule/hooks/use-post-scheduler';
 import { SettingsModal, useEditorStore } from '@/features/long-form-editor';
 import { PostStatus } from '@/features/long-form-editor/components/PostStatus';
 import { SocialPreview } from '@/features/long-form-editor/components/SocialPreview';
-import NDK, { NDKArticle, NDKDraft, NDKEvent, NDKKind, NDKUser, useEvent, useNDK } from '@nostr-dev-kit/ndk-hooks';
+import { NDKSchedule } from '@/features/schedules/event/schedule';
+import NDK, { dvmSchedule, NDKArticle, NDKDraft, NDKEvent, NDKKind, NDKUser, useEvent, useNDK } from '@nostr-dev-kit/ndk-hooks';
 import { format } from 'date-fns';
 
 import { ArrowLeft } from 'lucide-react';
@@ -26,15 +27,22 @@ export default function LongFormPostPage() {
 
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-    // Status state
-    const api = useAPI();
-
     // Use the useEvent hook from ndk-hooks to fetch the event by encoded ID
     const event = useEvent(encodedId || false, { wrap: true });
 
     useEffect(() => {
         if (event instanceof NDKArticle) {
             setArticle(event);
+        } else if (event?.kind === NDKKind.DVMEventSchedule) {
+            const scheduleEvent = NDKSchedule.from(event);
+            scheduleEvent.getEvent().then((article) => {
+                console.log('restoring with schedule', article?.inspect);
+                if (article) {
+                    const _article = NDKArticle.from(article);
+                    restoreFromEvent(_article);
+                    setArticle(_article);
+                }
+            });
         } else if (event?.kind === NDKKind.Draft || event?.kind === NDKKind.DraftCheckpoint) {
             const draft = NDKDraft.from(event);
             draft.getEvent().then((article) => {
@@ -49,23 +57,20 @@ export default function LongFormPostPage() {
     }, [event]);
 
     const { ndk } = useNDK();
+    const schedule = usePostScheduler();
 
     const handlePublishOrSchedule = async (publishAt?: Date) => {
+        console.log('Publishing or scheduling', publishAt);
         if (!ndk) throw new Error('NDK is not initialized');
 
         const events = getEvents(ndk, publishAt);
         
         if (publishAt) {
-            setPublishedAt(publishAt); // Update store with scheduled date
+            setPublishedAt(publishAt);
             for (const event of events) {
-                console.log('schedule:');
                 await event.sign();
-                event.dump();
-                await api.addPost({
-                    scheduledAt: publishAt ? publishAt.toISOString() : '',
-                    status: 'scheduled',
-                    rawEvent: JSON.stringify(event.rawEvent()),
-                });
+
+                schedule(event);
             }
         } else {
             for (const event of events) {
@@ -76,9 +81,6 @@ export default function LongFormPostPage() {
             setPublishedAt(new Date()); // Update store with current date
         }
         setIsConfirmDialogOpen(false);
-    };
-
-    const handleSaveAsDraftInternal = () => {
     };
 
     // Determine schedule settings for the ScheduleIndicator

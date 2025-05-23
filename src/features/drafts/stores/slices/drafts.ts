@@ -32,7 +32,7 @@ export const createDraftSlice: StateCreator<DraftSlice, [], [], DraftSlice> = (s
         
         // Get drafts, draft checkpoints, and deleted drafts
         const sub = ndk.subscribe([
-            { kinds: [NDKKind.Draft], authors: [currentPubkey] },
+            { kinds: [NDKKind.Draft], "#k": [NDKKind.Article.toString()], authors: [currentPubkey] },
             { kinds: [NDKKind.DraftCheckpoint], authors: [currentPubkey] },
             { kinds: [NDKKind.EventDeletion], "#k": [NDKKind.DraftCheckpoint.toString()], authors: [currentPubkey] },
         ], { wrap: true }, {
@@ -59,6 +59,8 @@ export const createDraftSlice: StateCreator<DraftSlice, [], [], DraftSlice> = (s
                 }
                 
                 const draft = event instanceof NDKDraft ? event : NDKDraft.from(event);
+
+                if (draft.hasTag("deleted")) return;
 
                 draft.getEvent().then(async (innerEvent: NDKEvent | null | undefined) => {
                     if (!innerEvent) {

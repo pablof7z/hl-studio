@@ -15,6 +15,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { useArticles } from '@/domains/articles';
 import { usePostDelete } from '@/features/post/hooks/use-post-delete';
 import { formatDate } from '@/lib/utils';
+import { NDKArticle, NDKEvent } from '@nostr-dev-kit/ndk';
 import {
     Archive, Calendar,
     Clock,
@@ -27,9 +28,139 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+function ArticleTableRow({ article, event, status, created_at }: { article: NDKArticle; event: NDKEvent; status: string; created_at: number }) {
+    const deletePost = usePostDelete();
+    
+    return (
+        <TableRow key={event.id}>
+            <TableCell>
+                <Link href={{ pathname: '/editor/post', query: { id: event.encode() } }}>
+                <div className="flex flex-row gap-2">
+                    {article.image ? (
+                        <img
+                            src={article.image}
+                            className="h-10 w-10 rounded-md object-cover bg-muted"
+                        />
+                    ) : (
+                        <div className="h-10 w-10 bg-muted rounded-md flex-none"></div>
+                    )}
+                    <div className="flex flex-col">
+                        <span className="font-medium">{article.title}</span>
+                        <span className="hidden text-sm text-muted-foreground sm:block">
+                            {article.summary?.slice(0, 100)}
+                        </span>
+                    </div>
+                </div>
+                </Link>
+            </TableCell>
+            <TableCell className="hidden md:table-cell">
+                <PostStatusBadge status={status} />
+            </TableCell>
+            <TableCell className="hidden md:table-cell">
+                {status === 'published' && (
+                    <div className="flex items-center gap-1">
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm">
+                            {article.published_at ? formatDate(article.published_at) : '-'}
+                        </span>
+                    </div>
+                )}
+                {status === 'draft' && (
+                    <div className="flex items-center gap-1">
+                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm">
+                            Updated {created_at ? formatDate(created_at) : '-'}
+                        </span>
+                    </div>
+                )}
+                {status === 'scheduled' && (
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">
+                                {article.created_at? formatDate(article.created_at) : '-'}
+                            </span>
+                        </div>
+                    </div>
+                )}
+                {status === 'archived' && (
+                    <div className="flex items-center gap-1">
+                        <Archive className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm">
+                            {article.created_at ? formatDate(article.created_at) : '-'}
+                        </span>
+                    </div>
+                )}
+            </TableCell>
+            <TableCell>
+                <TooltipProvider>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link href={{ pathname: '/editor/post', query: { id: event.encode() } }}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </Link>
+                            </DropdownMenuItem>
+                            {status === 'published' && (
+                                <DropdownMenuItem>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View
+                                </DropdownMenuItem>
+                            )}
+                            {status === 'scheduled' && (
+                                <DropdownMenuItem>
+                                    <Clock className="mr-2 h-4 w-4" />
+                                    Edit Schedule
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Duplicate
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => navigator.clipboard.writeText(post.inspect)}
+                            >
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy raw event
+                            </DropdownMenuItem>
+                            {status !== 'archived' ? (
+                                <DropdownMenuItem>
+                                    <Archive className="mr-2 h-4 w-4" />
+                                    Archive
+                                </DropdownMenuItem>
+                            ) : (
+                                <DropdownMenuItem>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Restore
+                                </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => deletePost(event)}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TooltipProvider>
+            </TableCell>
+        </TableRow>
+    )
+}
+
 export function PostsTable() {
     const articles = useArticles();
-    const deletePost = usePostDelete();
 
     return (
         <div className="rounded-md border">
@@ -43,143 +174,14 @@ export function PostsTable() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {articles.map(({ article: post, event, status, created_at }) => (
-                        <TableRow key={event.id}>
-                            <TableCell>
-                                <Link href={{ pathname: '/editor/post', query: { id: event.encode() } }}>
-                                <div className="flex flex-row gap-2">
-                                    {post.image ? (
-                                        <img
-                                            src={post.image}
-                                            alt={post.title}
-                                            className="h-10 w-10 rounded-md object-cover bg-muted"
-                                        />
-                                    ) : (
-                                        <div className="h-10 w-10 bg-muted rounded-md flex-none"></div>
-                                    )}
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">{post.title}</span>
-                                        <span className="hidden text-sm text-muted-foreground sm:block">
-                                            {post.summary?.slice(0, 100)}
-                                        </span>
-                                    </div>
-                                </div>
-                                </Link>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                                <PostStatusBadge status={status} />
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                                {status === 'published' && (
-                                    <div className="flex items-center gap-1">
-                                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                                        <span className="text-sm">
-                                            {post.published_at ? formatDate(post.published_at) : '-'}
-                                        </span>
-                                    </div>
-                                )}
-                                {status === 'draft' && (
-                                    <div className="flex items-center gap-1">
-                                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                                        <span className="text-sm">
-                                            Updated {created_at ? formatDate(created_at) : '-'}
-                                        </span>
-                                    </div>
-                                )}
-                                {status === 'scheduled' && (
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                                            <span className="text-sm">
-                                                {post.scheduledFor ? formatDate(post.scheduledFor) : '-'}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                                            <span className="text-sm">{post.scheduledTime}</span>
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {post.audienceType === 'all'
-                                                ? 'All subscribers'
-                                                : post.audienceType === 'paid'
-                                                  ? 'Paid subscribers'
-                                                  : 'Free subscribers'}
-                                        </div>
-                                    </div>
-                                )}
-                                {status === 'archived' && (
-                                    <div className="flex items-center gap-1">
-                                        <Archive className="h-3.5 w-3.5 text-muted-foreground" />
-                                        <span className="text-sm">
-                                            {post.archivedAt ? formatDate(post.archivedAt) : '-'}
-                                        </span>
-                                    </div>
-                                )}
-                            </TableCell>
-                            <TableCell>
-                                <TooltipProvider>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                                <span className="sr-only">Open menu</span>
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem asChild>
-                                                <Link href={{ pathname: '/editor/post', query: { id: event.encode() } }}>
-                                                    <Edit className="mr-2 h-4 w-4" />
-                                                    Edit
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            {status === 'published' && (
-                                                <DropdownMenuItem>
-                                                    <Eye className="mr-2 h-4 w-4" />
-                                                    View
-                                                </DropdownMenuItem>
-                                            )}
-                                            {status === 'scheduled' && (
-                                                <DropdownMenuItem>
-                                                    <Clock className="mr-2 h-4 w-4" />
-                                                    Edit Schedule
-                                                </DropdownMenuItem>
-                                            )}
-                                            <DropdownMenuItem>
-                                                <Copy className="mr-2 h-4 w-4" />
-                                                Duplicate
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => navigator.clipboard.writeText(post.inspect)}
-                                            >
-                                                <Copy className="mr-2 h-4 w-4" />
-                                                Copy raw event
-                                            </DropdownMenuItem>
-                                            {status !== 'archived' ? (
-                                                <DropdownMenuItem>
-                                                    <Archive className="mr-2 h-4 w-4" />
-                                                    Archive
-                                                </DropdownMenuItem>
-                                            ) : (
-                                                <DropdownMenuItem>
-                                                    <FileText className="mr-2 h-4 w-4" />
-                                                    Restore
-                                                </DropdownMenuItem>
-                                            )}
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                className="text-destructive focus:text-destructive"
-                                                onClick={() => deletePost(event)}
-                                            >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TooltipProvider>
-                            </TableCell>
-                        </TableRow>
+                    {articles.map(({ article, event, status, created_at }) => (
+                        <ArticleTableRow
+                            key={event.id}
+                            event={event}
+                            article={article}
+                            status={status}
+                            created_at={created_at}
+                        />
                     ))}
                 </TableBody>
             </Table>
