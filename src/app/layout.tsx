@@ -6,7 +6,7 @@ import { useArticlesStore } from '@/domains/articles';
 import { useDraftStore } from '@/features/drafts/stores';
 import { useEditorStore } from '@/features/long-form-editor';
 import { useScheduleStore } from '@/features/schedules/stores';
-import { getRelayUrls } from '@/ndk';
+import { getRelayUrls } from '@/ndk/config';
 import {
     NDKHeadless,
     NDKPrivateKeySigner,
@@ -32,14 +32,14 @@ export default function RootLayout({
     const scheduleStoreInit = useScheduleStore((s) => s.init);
     const editorStoreInit = useEditorStore((s) => s.init);
     const { ndk } = useNDK();
-    const login = useNDKSessionLogin();
 
     // If the manual tester mode is enabled, directly login into the app.
+    const login = useNDKSessionLogin();
     useEffect(() => {
         if (testSigner) {
             // login(testSigner);
         }
-    }, []);
+    }, [login]);
 
     useEffect(() => {
         if (ndk) ndk.connect();
@@ -52,7 +52,7 @@ export default function RootLayout({
             scheduleStoreInit(ndk, currentPubkey);
             editorStoreInit(ndk);
         }
-    }, [currentPubkey]);
+    }, [articleStoreInit, currentPubkey, draftStoreInit, editorStoreInit, ndk, scheduleStoreInit]);
 
     return (
         <html lang="en">

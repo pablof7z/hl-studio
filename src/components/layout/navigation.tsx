@@ -18,9 +18,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 const navigationItems = [
-    { name: 'Dashboard', path: '/' },
-    { name: 'Posts', path: '/posts' },
-    { name: 'Subscribers', path: '/subscribers' },
+    { name: 'Posts', path: '/' },
     { name: 'Recommendations', path: '/recommendations' },
     { name: 'Settings', path: '/settings' },
 ];

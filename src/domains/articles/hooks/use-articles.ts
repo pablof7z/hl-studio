@@ -13,6 +13,7 @@ type ArticleEntry = {
     schedule?: NDKSchedule;
     created_at: number;
     status: string;
+    counterparty?: string; // For proposals
 };
 
 /**
@@ -56,6 +57,8 @@ export function useArticles({ includeDeleted } = { includeDeleted: false }): Art
                     article: NDKArticle.from(draftPost.innerEvent),
                     draft: draftPost.draft,
                     created_at: draftPost.draft.created_at,
+                    category: draftPost.category,
+                    counterparty: draftPost.counterparty,
                     dTag
                 };
             })
@@ -76,15 +79,26 @@ export function useArticles({ includeDeleted } = { includeDeleted: false }): Art
 
         // Add all the drafts (use the most recent version of each draft)
         for (const draftArticle of draftArticles) {
-            const { dTag, article, draft, created_at } = draftArticle;
-            items[dTag] ??= { article, event: draft, created_at, status: 'draft' };
+            const { dTag, article, draft, created_at, category, counterparty } = draftArticle;
+            
+            // Map category to status for display
+            let status = 'draft';
+            if (category === 'incoming_proposal') {
+                status = 'incoming_proposal';
+            } else if (category === 'outgoing_proposal') {
+                status = 'outgoing_proposal';
+            }
+            
+            items[dTag] ??= { article, event: draft, created_at, status, counterparty };
             items[dTag].draft = draftArticle.draft;
+            items[dTag].counterparty = counterparty;
 
             // check if the draft is newer than whatever is in the event
             if (items[dTag].event.created_at > created_at) {
                 items[dTag].event = draft;
                 items[dTag].created_at = created_at;
-                items[dTag].status = 'draft';
+                items[dTag].status = status;
+                items[dTag].counterparty = counterparty;
             }
         }
 

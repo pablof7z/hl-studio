@@ -2,7 +2,7 @@
 
 import { NostrEditor } from '@/components/editor/nostr-editor';
 import { ConfirmationDialog } from '@/components/posts/ConfirmationDialog';
-import { ScheduleIndicator, type ScheduleIndicatorSettings } from '@/components/posts/schedule-indicator';
+import { getConfirmationButtonText } from '@/components/posts/utils/getConfirmationButtonText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePostScheduler } from '@/domains/schedule/hooks/use-post-scheduler';
@@ -10,8 +10,7 @@ import { SettingsModal, useEditorStore } from '@/features/long-form-editor';
 import { PostStatus } from '@/features/long-form-editor/components/PostStatus';
 import { SocialPreview } from '@/features/long-form-editor/components/SocialPreview';
 import { NDKSchedule } from '@/features/schedules/event/schedule';
-import NDK, { dvmSchedule, NDKArticle, NDKDraft, NDKEvent, NDKKind, NDKUser, useEvent, useNDK } from '@nostr-dev-kit/ndk-hooks';
-import { format } from 'date-fns';
+import { NDKArticle, NDKDraft, NDKKind, useEvent, useNDK, useNDKCurrentPubkey } from '@nostr-dev-kit/ndk-hooks';
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -22,10 +21,22 @@ export default function LongFormPostPage() {
     const searchParams = useSearchParams();
     const encodedId = searchParams.get('id') || undefined;
     const [article, setArticle] = useState<NDKArticle | null>(null);
-    const { setContent, title, setTitle, restoreFromEvent, publishedAt, setPublishedAt, getEvents } =
-        useEditorStore();
+    const {
+        setContent,
+        title,
+        setTitle,
+        restoreFromEvent,
+        publishAt,
+        setPublishAt,
+        post,
+        proposalCounterparty,
+        author,
+    } = useEditorStore();
 
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+    const currentPubkey = useNDKCurrentPubkey();
+    const isProposal = !!(author && author.pubkey !== currentPubkey);
+    const isScheduled = publishAt !== null;
 
     // Use the useEvent hook from ndk-hooks to fetch the event by encoded ID
     const event = useEvent(encodedId || false, { wrap: true });
@@ -57,50 +68,14 @@ export default function LongFormPostPage() {
     }, [event]);
 
     const { ndk } = useNDK();
-    const schedule = usePostScheduler();
 
-    const handlePublishOrSchedule = async (publishAt?: Date) => {
-        console.log('Publishing or scheduling', publishAt);
+    const handlePublish = async () => {
         if (!ndk) throw new Error('NDK is not initialized');
 
-        const events = getEvents(ndk, publishAt);
+        post(ndk);
         
-        if (publishAt) {
-            setPublishedAt(publishAt);
-            for (const event of events) {
-                await event.sign();
-
-                schedule(event);
-            }
-        } else {
-            for (const event of events) {
-                event.publish();
-            }
-
-            // This is a publish now action
-            setPublishedAt(new Date()); // Update store with current date
-        }
         setIsConfirmDialogOpen(false);
     };
-
-    // Determine schedule settings for the ScheduleIndicator
-    const scheduleIndicatorSettings: ScheduleIndicatorSettings | null =
-        status === 'Scheduled' && publishedAt
-            ? {
-                  date: publishedAt,
-                  time: format(publishedAt, 'HH:mm'),
-                  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                  // Add placeholder/default values for missing properties
-                  sendEmail: true, // Default or from a relevant state
-                  audienceType: 'all', // Default or from a relevant state
-                  socialShare: {
-                      // Placeholder for socialShare
-                      twitter: false,
-                      linkedin: false,
-                      facebook: false,
-                  },
-              }
-            : null;
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
@@ -114,12 +89,15 @@ export default function LongFormPostPage() {
                         </Button>
                         <div className="flex items-center gap-2">
                             <PostStatus />
-                            {scheduleIndicatorSettings && (
-                                <ScheduleIndicator settings={scheduleIndicatorSettings} className="ml-2" />
-                            )}
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* TODO Replace with a ProposalIndicator! */}
+                        {proposalCounterparty && (
+                            <span className="text-xs text-muted-foreground mr-2">
+                                Proposal for {proposalCounterparty.profile?.name || proposalCounterparty.npub.slice(0, 8)}...
+                            </span>
+                        )}
                         <Button variant="outline" size="sm">
                             Preview
                         </Button>
@@ -133,8 +111,13 @@ export default function LongFormPostPage() {
             <ConfirmationDialog
                 open={isConfirmDialogOpen}
                 onOpenChange={setIsConfirmDialogOpen}
-                onPublish={handlePublishOrSchedule}
-                onSchedule={handlePublishOrSchedule}
+                onSubmit={handlePublish}
+                publishAt={publishAt}
+                setPublishAt={setPublishAt}
+                buttonText={getConfirmationButtonText({
+                    isProposal,
+                    isScheduled,
+                })}
             >
                 <SocialPreview />
             </ConfirmationDialog>

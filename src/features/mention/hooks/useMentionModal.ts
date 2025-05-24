@@ -1,7 +1,7 @@
 import { useNostrEventSearch } from '@/domains/events';
 import { useNostrUserSearch } from '@/domains/users';
 import { useCallback, useEffect, useState } from 'react';
-import { MentionEntity, useMentionStore } from '../stores/mentionStore';
+import { MentionEntity } from '../types';
 
 export interface UseMentionModalProps {
     onSelect?: (entity: MentionEntity) => void;
@@ -9,18 +9,16 @@ export interface UseMentionModalProps {
 }
 
 export function useMentionModal({ onSelect, onClose }: UseMentionModalProps = {}) {
-    const {
-        isOpen,
-        query,
-        selectedIndex,
-        selectedEntity,
-        open,
-        close,
-        setQuery,
-        setSelectedIndex,
-        setSelectedEntity,
-        reset,
-    } = useMentionStore();
+    const [isOpen, setIsOpen] = useState(false);
+    const [query, setQueryState] = useState('');
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [selectedEntity, setSelectedEntity] = useState<MentionEntity | null>(null);
+
+    const reset = () => {
+        setQueryState('');
+        setSelectedIndex(0);
+        setSelectedEntity(null);
+    }
 
     // Local state for tracking what type of search we're doing
     const [searchType, setSearchType] = useState<'user' | 'event'>('user');

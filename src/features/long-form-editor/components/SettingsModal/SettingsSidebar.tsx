@@ -3,8 +3,8 @@
 import { Button } from '@/components/ui/button';
 
 export interface SettingsSidebarProps {
-    activeSettingsTab: 'metadata' | 'monetization';
-    setActiveSettingsTab: (tab: 'metadata' | 'monetization') => void;
+    activeSettingsTab: 'metadata' | 'monetization' | 'proposal';
+    setActiveSettingsTab: (tab: 'metadata' | 'monetization' | 'proposal') => void;
 }
 
 export function SettingsSidebar({ activeSettingsTab, setActiveSettingsTab }: SettingsSidebarProps) {
@@ -26,6 +26,13 @@ export function SettingsSidebar({ activeSettingsTab, setActiveSettingsTab }: Set
                         onClick={() => setActiveSettingsTab('monetization')}
                     >
                         Monetization
+                    </Button>
+                    <Button
+                        variant={activeSettingsTab === 'proposal' ? 'secondary' : 'ghost'}
+                        className="w-full justify-start px-4"
+                        onClick={() => setActiveSettingsTab('proposal')}
+                    >
+                        Proposal
                     </Button>
                 </div>
             </div>

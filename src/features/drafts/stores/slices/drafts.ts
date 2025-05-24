@@ -1,9 +1,13 @@
 import NDK, { NDKArticle, NDKDraft, NDKEvent, NDKEventId, NDKKind, NDKSubscription, wrapEvent } from '@nostr-dev-kit/ndk';
 import { StateCreator } from 'zustand';
 
+export type DraftCategory = "draft" | "incoming_proposal" | "outgoing_proposal";
+
 export type DraftItem = {
     draft: NDKDraft;
     innerEvent: NDKEvent | NDKArticle;
+    category: DraftCategory;
+    counterparty?: string; // pubkey of the other party in proposals
 }
 
 export interface DraftSlice {
@@ -17,6 +21,10 @@ export interface DraftSlice {
     init: (ndk: NDK, currentPubkey: string) => void;
 
     deleteDraft: (draft: NDKEvent) => void;
+
+    // Helper methods for proposals
+    categorizeDraft: (draft: NDKDraft, currentPubkey: string) => DraftCategory;
+    getCounterparty: (draft: NDKDraft, currentPubkey: string) => string | undefined;
 }
 
 export const createDraftSlice: StateCreator<DraftSlice, [], [], DraftSlice> = (set, get) => ({
@@ -30,9 +38,10 @@ export const createDraftSlice: StateCreator<DraftSlice, [], [], DraftSlice> = (s
         const currentSub = get().sub;
         if (currentSub) currentSub.stop();
         
-        // Get drafts, draft checkpoints, and deleted drafts
+        // Get drafts, draft checkpoints, deleted drafts, and incoming proposals
         const sub = ndk.subscribe([
             { kinds: [NDKKind.Draft], "#k": [NDKKind.Article.toString()], authors: [currentPubkey] },
+            { kinds: [NDKKind.Draft], "#k": [NDKKind.Article.toString()], "#p": [currentPubkey] },
             { kinds: [NDKKind.DraftCheckpoint], authors: [currentPubkey] },
             { kinds: [NDKKind.EventDeletion], "#k": [NDKKind.DraftCheckpoint.toString()], authors: [currentPubkey] },
         ], { wrap: true }, {
@@ -95,7 +104,14 @@ export const createDraftSlice: StateCreator<DraftSlice, [], [], DraftSlice> = (s
                     }
 
                     // add it and sort it
-                    items[draftId].push({ draft, innerEvent: await wrapEvent(innerEvent) });
+                    const category = get().categorizeDraft(draft, currentPubkey);
+                    const counterparty = get().getCounterparty(draft, currentPubkey);
+                    items[draftId].push({
+                        draft,
+                        innerEvent: await wrapEvent(innerEvent),
+                        category,
+                        counterparty
+                    });
                     items[draftId].sort((a, b) => {
                         if (a.draft.created_at === b.draft.created_at) return 0;
                         return b.draft.created_at < a.draft.created_at ? -1 : 1;
@@ -162,5 +178,35 @@ export const createDraftSlice: StateCreator<DraftSlice, [], [], DraftSlice> = (s
         deleteEvent.dump();
         deleteEvent.publish();
 
+    },
+
+    categorizeDraft: (draft: NDKDraft, currentPubkey: string): DraftCategory => {
+        const isAuthor = draft.pubkey === currentPubkey;
+        const pTags = draft.tags.filter(tag => tag[0] === "p");
+        const hasPTags = pTags.length > 0;
+        const isTaggedInP = pTags.some(tag => tag[1] === currentPubkey);
+
+        if (isAuthor && hasPTags) {
+            return "outgoing_proposal";
+        } else if (!isAuthor && isTaggedInP) {
+            return "incoming_proposal";
+        } else {
+            return "draft";
+        }
+    },
+
+    getCounterparty: (draft: NDKDraft, currentPubkey: string): string | undefined => {
+        const isAuthor = draft.pubkey === currentPubkey;
+        const pTags = draft.tags.filter(tag => tag[0] === "p");
+
+        if (isAuthor && pTags.length > 0) {
+            // For outgoing proposals, the counterparty is the first p-tagged user
+            return pTags[0][1];
+        } else if (!isAuthor) {
+            // For incoming proposals, the counterparty is the author
+            return draft.pubkey;
+        }
+
+        return undefined;
     }
 });

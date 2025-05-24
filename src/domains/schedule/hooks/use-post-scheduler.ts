@@ -2,11 +2,11 @@ import NDK, { dvmSchedule, NDKEvent, NDKKind, NDKUser } from "@nostr-dev-kit/ndk
 import { useNDK } from "@nostr-dev-kit/ndk-hooks";
 import { useCallback } from "react";
 
-const HIGHLIGHTER_DVM_PUBKEY = "366826604721a653b1bb53418b0ca02495569c90cc325d14363a6b7b3489492b";
+export const HIGHLIGHTER_DVM_USER = new NDKUser({ pubkey: "366826604721a653b1bb53418b0ca02495569c90cc325d14363a6b7b3489492b" });
 
 export function usePostScheduler() {
     const { ndk } = useNDK();
-    const dvm = ndk?.getUser({ pubkey: HIGHLIGHTER_DVM_PUBKEY });
+    const dvm = HIGHLIGHTER_DVM_USER;
     
     return useCallback((event: NDKEvent) => {
         if (!dvm) throw new Error('DVM is not initialized');
@@ -20,10 +20,10 @@ export function usePostScheduler() {
     }, [dvm])
 }
 
-async function schedule(
+export async function schedule(
     ndk: NDK,
     event: NDKEvent,
-    dvm: NDKUser
+    dvm: NDKUser = HIGHLIGHTER_DVM_USER
 ) {
     const req = new NDKEvent(ndk, {
         kind: 5905,

@@ -6,11 +6,12 @@ import { Settings } from 'lucide-react';
 import { useState } from 'react';
 import { MetadataSection } from './MetadataSection';
 import { MonetizationSection } from './MonetizationSection';
+import { ProposalSection } from './ProposalSection';
 import { SettingsSidebar } from './SettingsSidebar';
 
 export function SettingsModal() {
     const [isOpen, setIsOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'metadata' | 'monetization'>('metadata');
+    const [activeTab, setActiveTab] = useState<'metadata' | 'monetization' | 'proposal'>('metadata');
 
     return (
         <>
@@ -26,6 +27,7 @@ export function SettingsModal() {
                         <div className="flex-1 p-6 overflow-y-auto">
                             {activeTab === 'metadata' && <MetadataSection />}
                             {activeTab === 'monetization' && <MonetizationSection />}
+                            {activeTab === 'proposal' && <ProposalSection />}
                         </div>
                     </div>
                 </DialogContent>

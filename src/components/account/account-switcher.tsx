@@ -11,19 +11,16 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Dialog } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAccountStore } from '@/domains/account/stores/accountStore';
-import { useMyGroups } from '@/domains/groups/hooks/use-my-groups';
-import { usePinnedGroupsStore } from '@/domains/groups/stores/pinned-groups';
 import UserAvatar from '@/features/nostr/components/user/UserAvatar';
+import { NDKPublication } from '@/features/publication/event/publication';
 import { cn } from '@/lib/utils';
-import { useNDK, useNDKCurrentPubkey, useProfileValue } from '@nostr-dev-kit/ndk-hooks';
+import { useNDK, useNDKCurrentPubkey, useProfileValue, useSubscribe } from '@nostr-dev-kit/ndk-hooks';
 import { CaretSortIcon, CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons';
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>;
 
@@ -32,20 +29,23 @@ type AccountSwitcherProps = PopoverTriggerProps & {
 };
 
 export function AccountSwitcher({ className }: AccountSwitcherProps) {
+    // const router = useRouter()
     const [open, setOpen] = React.useState(false);
     const [showNewAccountDialog, setShowNewAccountDialog] = React.useState(false);
     const currentPubkey = useNDKCurrentPubkey();
-    const listPinnedGroups = usePinnedGroupsStore((state) => state.listPinnedGroups);
-    const myGroups = useMyGroups();
-    const { ndk } = useNDK();
     const userProfile = useProfileValue(currentPubkey);
     const selectedAccount = useAccountStore((state) => state.selectedAccount);
     const setSelectedAccount = useAccountStore((state) => state.setSelectedAccount);
-
-    React.useEffect(() => {
-        if (!currentPubkey || !ndk) return;
-        listPinnedGroups(ndk, [currentPubkey]);
-    }, [currentPubkey]);
+    const { events: _publications } = useSubscribe(
+        currentPubkey
+            ? [
+                { kinds: [NDKPublication.kind], authors: [currentPubkey] },
+                { kinds: [NDKPublication.kind], '#p': [currentPubkey] },
+            ] : false,
+        { wrap: false },
+        [currentPubkey]
+    );
+    const publications = useMemo(() => _publications.map(NDKPublication.from), [_publications]);
 
     React.useEffect(() => {
         // set default selectedAccount to current user if not set
@@ -80,18 +80,17 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
                                     </>
                                 ) : (
                                     (() => {
-                                        const group = myGroups.find((g) => g.groupId === selectedAccount.id);
-                                        return group ? (
+                                        const publication = publications.find((p) => p.id === selectedAccount.id);
+                                        return publication ? (
                                             <>
                                                 <Avatar className="h-6 w-6">
                                                     <AvatarImage
-                                                        src={group.metadata?.picture || ''}
-                                                        alt={group.metadata?.name || ''}
+                                                        src={publication.image || ''}
                                                     />
                                                     <AvatarFallback>AI</AvatarFallback>
                                                 </Avatar>
                                                 <span className="font-medium">
-                                                    {group.metadata?.name ?? group.groupId}
+                                                    {publication.title}
                                                 </span>
                                             </>
                                         ) : (
@@ -146,31 +145,31 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
                             </CommandGroup>
 
                             <CommandGroup heading="Publications" className="overflow-auto">
-                                {myGroups.map((group) => (
+                                {publications.map((publication) => (
                                     <CommandItem
-                                        key={group.groupId}
-                                        value={group.groupId}
+                                        key={publication.id}
+                                        value={publication.encode()}
                                         onSelect={() => {
-                                            setSelectedAccount({ type: 'publication', id: group.groupId });
+                                            setSelectedAccount({ type: 'publication', id: publication.id });
                                             setOpen(false);
                                         }}
-                                        className="text-sm"
+                                        className="text-sm truncate"
                                     >
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-6 w-6">
                                                 <AvatarImage
-                                                    src={group.metadata?.picture || ''}
-                                                    alt={group.metadata?.name || ''}
+                                                    src={publication.image || ''}
+                                                    alt={publication.title || ''}
                                                 />
                                                 <AvatarFallback>AI</AvatarFallback>
                                             </Avatar>
-                                            <span>{group.metadata?.name ?? group.groupId}</span>
+                                            <span>{publication.title}</span>
                                         </div>
                                         <CheckIcon
                                             className={cn(
                                                 'ml-auto h-4 w-4',
                                                 selectedAccount?.type === 'publication' &&
-                                                    selectedAccount?.id === group.groupId
+                                                    selectedAccount?.id === publication.id
                                                     ? 'opacity-100'
                                                     : 'opacity-0'
                                             )}
@@ -184,8 +183,8 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
                             <CommandGroup>
                                 <CommandItem
                                     onSelect={() => {
-                                        setOpen(false);
-                                        setShowNewAccountDialog(true);
+                                        // router.push('/publications/new');
+                                        // setOpen(false);
                                     }}
                                 >
                                     <PlusCircledIcon className="mr-2 h-5 w-5" />
@@ -196,28 +195,6 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
                     </Command>
                 </PopoverContent>
             </Popover>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Create Publication</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" placeholder="Acme Inc." />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="domain">Domain</Label>
-                        <Input id="domain" placeholder="acme" />
-                        <span className="text-xs text-muted-foreground">This will be used in your publication URL</span>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowNewAccountDialog(false)}>
-                        Cancel
-                    </Button>
-                    <Button onClick={() => setShowNewAccountDialog(false)}>Create</Button>
-                </DialogFooter>
-            </DialogContent>
         </Dialog>
     );
 }

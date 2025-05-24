@@ -1,9 +1,12 @@
 import { StateCreator } from 'zustand';
-import NDK, { NDKDraft } from '@nostr-dev-kit/ndk-hooks';
+import NDK from '@nostr-dev-kit/ndk';
+import { NDKDraft, NDKUser } from '@nostr-dev-kit/ndk';
 
 export interface DraftSlice {
     ndk: NDK | null;
     draft: NDKDraft | null;
+    author: NDKUser | null;
+    proposalCounterparty: NDKUser | null;
 
     changesSinceLastSave: number;
     autosave: boolean;
@@ -12,7 +15,12 @@ export interface DraftSlice {
     init: (ndk: NDK) => void;
 
     setDraft: (draft: NDKDraft | null) => void;
-    saveDraft: (manual: boolean) => Promise<void>;
+    saveDraft: (manual: boolean, allowProposal?: boolean) => Promise<void>;
+
+    setAuthor: (author: NDKUser | null) => void;
+    clearAuthor: () => void;
+    setProposalCounterparty: (counterparty: NDKUser) => void;
+    clearProposalCounterparty: () => void;
 
     markChange: () => void;
 }
@@ -20,6 +28,8 @@ export interface DraftSlice {
 export const createDraftSlice: StateCreator<any, [], [], DraftSlice> = (set, get) => ({
     draft: null,
     ndk: null,
+    author: null,
+    proposalCounterparty: null,
 
     changesSinceLastSave: 0,
     autosave: true,
@@ -32,8 +42,8 @@ export const createDraftSlice: StateCreator<any, [], [], DraftSlice> = (set, get
         set({ draft });
     },
 
-    saveDraft: async (manual: boolean) => {
-        const { ndk, draft, getEvent, autosaveTimer } = get();
+    saveDraft: async (manual: boolean, forceProposal?: boolean) => {
+        const { ndk, draft, getEvent, autosaveTimer, author, counterparty } = get();
 
         if (!ndk) throw new Error('NDK is not initialized');
 
@@ -45,14 +55,24 @@ export const createDraftSlice: StateCreator<any, [], [], DraftSlice> = (set, get
         if (!manual && !!draft) {
             // if this is an automatic save,
             // and we already have a draft, save as checkpoint
+            // Note: Using any type assertion as checkpoint might be a custom property
             draftEvent.checkpoint = draft;
             console.debug('[draftSlice] Saving draft as checkpoint');
         }
 
         draftEvent.event = event;
 
-        draftEvent.save({ publish: true }).then((event) => {
+        const setCounterparty = forceProposal || draftEvent.hasTag('p');
+
+        console.log('[draftSlice] Saving draft:', {
+            forceProposal,
+            author: author?.pubkey,
+        })
+        if (setCounterparty && author) draftEvent.counterparty = author;
+
+        draftEvent.save({ publish: true }).then(() => {
             console.debug('[draftSlice] Draft saved:', { draftId: draftEvent.id });
+            draftEvent.dump();
             set({ draft: draftEvent, changesSinceLastSave: 0 });
         });
     },
@@ -72,5 +92,23 @@ export const createDraftSlice: StateCreator<any, [], [], DraftSlice> = (set, get
                 autosaveTimer: newTimer,
             })
         }
+    },
+
+    setAuthor: (author: NDKUser | null) => {
+        set({ author });
+    },
+
+    clearAuthor: () => {
+        set({ author: null });
+    },
+
+    setProposalCounterparty: (counterparty: NDKUser) => {
+        set({ proposalCounterparty: counterparty });
+        // In proposal mode, the counterparty becomes the author
+        set({ author: counterparty });
+    },
+
+    clearProposalCounterparty: () => {
+        set({ proposalCounterparty: null, author: null });
     }
 });

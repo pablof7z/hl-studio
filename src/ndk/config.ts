@@ -10,10 +10,7 @@
  * Default production relays
  */
 export const DEFAULT_RELAYS = [
-    'wss://relay.primal.net',
-    'wss://purplepag.es',
-    'wss://relay.nostr.band',
-    'wss://relay.damus.io',
+    'ws://localhost:10547',
 ];
 
 /**

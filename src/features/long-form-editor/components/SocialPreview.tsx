@@ -2,6 +2,8 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { HashtagInput } from '@/components/ui/hashtag-input';
+import { TimeSelector } from '@/components/ui/TimeSelector';
 import NDKBlossom from "@nostr-dev-kit/ndk-blossom";
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,10 +18,9 @@ import React, { useMemo, useState } from 'react';
 
 export function SocialPreview({ edit }: { edit?: boolean }) {
     const [isEditing, setIsEditing] = useState(edit);
-    const [newTag, setNewTag] = useState('');
     const currentPubkey = useNDKCurrentPubkey();
     // Use the editor store directly
-    const { title, setTitle, summary, setSummary, tags, setTags, setUploadingImage } = useEditorStore();
+    const { title, setTitle, summary, setSummary, tags, setTags, setUploadingImage, author, proposalCounterparty, publishAt, setPublishAt } = useEditorStore();
     const hashtags = useMemo(() => (
         tags.filter((t: string[]) => t[0] === 't').map(t => t[1])
     ), [tags]);
@@ -28,20 +29,19 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
     // For hero image, keep in editor store via a custom field
     const { image, setImage } = useEditorStore();
 
-    const handleAddTag = () => {
-            setTags([...tags, ["t", newTag]]);
-            setNewTag('');
-    };
-
-    const handleRemoveTag = (tagToRemove: string) => {
-        setTags(tags.filter((tag) => tag[0] === 't' && tag[1] !== tagToRemove));
+    const handleHashtagsChange = (newHashtags: string[]) => {
+        const newTags = tags.filter(tag => tag[0] !== 't');
+        newHashtags.forEach(hashtag => {
+            newTags.push(['t', hashtag]);
+        });
+        setTags(newTags);
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!ndk) return;
 
         const file = e.target.files?.[0];
-        const blossom = new NDKBlossom(ndk);
+        const blossom = new NDKBlossom(ndk as any);
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
@@ -63,6 +63,12 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
         }
     };
 
+    const displayPubkey = author ? author.pubkey : currentPubkey;
+
+    if (!displayPubkey) {
+        return null; // Don't render if no pubkey available
+    }
+
     return (
         <div className="space-y-4">
             <div className="space-y-4">
@@ -73,10 +79,16 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
                         <div className="flex gap-4">
                             <div className="flex-1 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <UserAvatar pubkey={currentPubkey ?? ''} size={'xs'} />
+                                    <UserAvatar pubkey={displayPubkey} size={'xs'} />
                                     <span className="text-sm font-medium">
-                                        <UserName pubkey={currentPubkey ?? ''} />
+                                        <UserName pubkey={displayPubkey} />
                                     </span>
+                                    <TimeSelector
+                                        value={publishAt}
+                                        onChange={setPublishAt}
+                                        defaultText="Publish now"
+                                        className="text-xs text-muted-foreground"
+                                    />
                                 </div>
 
                                 {isEditing ? (
@@ -94,37 +106,11 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
                                             className="border-0 p-0 h-auto min-h-0 text-sm text-muted-foreground resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                                             rows={2}
                                         />
-                                        <div className="flex flex-wrap gap-1 pt-1">
-                                            {hashtags.map((tag) => (
-                                                <Badge
-                                                    key={tag}
-                                                    variant="secondary"
-                                                    className="text-xs px-1.5 py-0 gap-1"
-                                                >
-                                                    {tag}
-                                                    <button
-                                                        onClick={() => handleRemoveTag(tag)}
-                                                        className="ml-1 h-3 w-3 rounded-full flex items-center justify-center"
-                                                    >
-                                                        <X className="h-2 w-2" />
-                                                    </button>
-                                                </Badge>
-                                            ))}
-                                            <div className="inline-flex">
-                                                <Input
-                                                    value={newTag}
-                                                    onChange={(e) => setNewTag(e.target.value)}
-                                                    placeholder="+ Add tag"
-                                                    className="border-0 p-0 h-auto w-20 text-xs shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            e.preventDefault();
-                                                            handleAddTag();
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
+                                        <HashtagInput
+                                            hashtags={hashtags}
+                                            onHashtagsChange={handleHashtagsChange}
+                                            placeholder="+ Add tag"
+                                        />
                                     </>
                                 ) : (
                                     <>

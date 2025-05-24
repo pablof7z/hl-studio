@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-function ArticleTableRow({ article, event, status, created_at }: { article: NDKArticle; event: NDKEvent; status: string; created_at: number }) {
+function ArticleTableRow({ article, event, status, created_at, counterparty }: { article: NDKArticle; event: NDKEvent; status: string; created_at: number; counterparty?: string }) {
     const deletePost = usePostDelete();
     
     return (
@@ -49,6 +49,12 @@ function ArticleTableRow({ article, event, status, created_at }: { article: NDKA
                         <span className="hidden text-sm text-muted-foreground sm:block">
                             {article.summary?.slice(0, 100)}
                         </span>
+                        {(status === 'incoming_proposal' || status === 'outgoing_proposal') && counterparty && (
+                            <span className="text-xs text-blue-600 mt-1">
+                                {status === 'incoming_proposal' ? 'From: ' : 'To: '}
+                                {counterparty.slice(0, 8)}...{counterparty.slice(-4)}
+                            </span>
+                        )}
                     </div>
                 </div>
                 </Link>
@@ -65,7 +71,7 @@ function ArticleTableRow({ article, event, status, created_at }: { article: NDKA
                         </span>
                     </div>
                 )}
-                {status === 'draft' && (
+                {(status === 'draft' || status === 'incoming_proposal' || status === 'outgoing_proposal') && (
                     <div className="flex items-center gap-1">
                         <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-sm">
@@ -127,7 +133,7 @@ function ArticleTableRow({ article, event, status, created_at }: { article: NDKA
                                 Duplicate
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(post.inspect)}
+                                onClick={() => navigator.clipboard.writeText(event.inspect)}
                             >
                                 <Copy className="mr-2 h-4 w-4" />
                                 Copy raw event
@@ -174,13 +180,14 @@ export function PostsTable() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {articles.map(({ article, event, status, created_at }) => (
+                    {articles.map(({ article, event, status, created_at, counterparty }) => (
                         <ArticleTableRow
                             key={event.id}
                             event={event}
                             article={article}
                             status={status}
                             created_at={created_at}
+                            counterparty={counterparty}
                         />
                     ))}
                 </TableBody>

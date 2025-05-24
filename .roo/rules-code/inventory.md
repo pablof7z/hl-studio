@@ -28,7 +28,7 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
             - [id]/
                 - route.ts
             - route.ts
-    - dashboard/
+    - (dashboard)/
         - layout.tsx
         - page.tsx
         - posts/
@@ -41,6 +41,9 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
             - import-export/page.tsx
             - new/page.tsx
             - new-thread/page.tsx
+        - publications/
+            - new/
+                - page.tsx
         - recommendations/
             - page.tsx
         - schedule/
@@ -78,6 +81,7 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
         - navigation.tsx
         - sidebar.tsx
     - posts/
+        - ConfirmationDialog.tsx
         - post-editor.tsx
         - post-schedule-dialog.tsx
         - post-status-badge.tsx
@@ -86,6 +90,9 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
         - posts-filter.tsx
         - posts-table.tsx
         - schedule-indicator.tsx
+        - utils/
+            - getConfirmationButtonText.ts
+            - getConfirmationButtonText.test.ts
         - import-export/
             - export-posts-table.tsx
             - export-posts.tsx
@@ -180,6 +187,12 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
             - useFeedFilters.ts
         - stores/
             - feedUiStore.ts
+    - publication/
+        - event/
+            - publication.ts
+        - components/
+            - PublicationWizard.tsx
+            - PublicationCard.tsx
     - thread-editor/
         - components/
             - ThreadEditor.tsx
@@ -222,3 +235,5 @@ You MUST keep this file up to date with your work, when you refactor/add/delete 
 - All hooks use the `useCamel` naming convention, and components use PascalCase.
 - All files use 4-space indentation and strict TypeScript.
 - Thread editor now supports local draft persistence: `useThreadDraftPersistence.ts` handles saving/restoring/resetting thread drafts in localStorage, integrated into `ThreadEditor.tsx`.
+- ConfirmationDialog button text logic extracted to `getConfirmationButtonText.ts` utility with explicit handling for proposals, scheduling, and default publishing.
+- Vitest configuration enabled with globals for testing utilities.
