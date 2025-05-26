@@ -8,6 +8,7 @@ import { useEditorStore } from '@/features/long-form-editor';
 import { useScheduleStore } from '@/features/schedules/stores';
 import { getRelayUrls } from '@/ndk/config';
 import {
+    NDKCacheAdapter,
     NDKHeadless,
     NDKPrivateKeySigner,
     NDKSessionLocalStorage,
@@ -15,6 +16,7 @@ import {
     useNDKCurrentPubkey,
     useNDKSessionLogin,
 } from '@nostr-dev-kit/ndk-hooks';
+import NDKCacheSqliteWasm from '@nostr-dev-kit/ndk-cache-sqlite-wasm';
 import { useEffect, useRef } from 'react';
 
 const testSigner = new NDKPrivateKeySigner('nsec1gz92f7qu9ctxwdztzjramxmkg05say892r5thumarwyj3zde0edss0c9yt'); // MANUAL TESTER AGENT KEY ENABLED
@@ -26,6 +28,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     const sessionStorage = useRef(new NDKSessionLocalStorage());
+    const cache = useRef(new NDKCacheSqliteWasm({
+        wasmUrl: '/sql-wasm.wasm'
+    }));
     const currentPubkey = useNDKCurrentPubkey();
     const articleStoreInit = useArticlesStore((s) => s.init);
     const draftStoreInit = useDraftStore((s) => s.init);
@@ -34,16 +39,12 @@ export default function RootLayout({
     const { ndk } = useNDK();
 
     // If the manual tester mode is enabled, directly login into the app.
-    const login = useNDKSessionLogin();
-    useEffect(() => {
-        if (testSigner) {
-            // login(testSigner);
-        }
-    }, [login]);
-
-    useEffect(() => {
-        if (ndk) ndk.connect();
-    }, [ndk]);
+    // const login = useNDKSessionLogin();
+    // useEffect(() => {
+    //     if (testSigner) {
+    //         // login(testSigner);
+    //     }
+    // }, [login]);
 
     useEffect(() => {
         if (ndk && currentPubkey) {
@@ -60,6 +61,7 @@ export default function RootLayout({
                 <NDKHeadless
                     ndk={{
                         explicitRelayUrls: getRelayUrls(),
+                        cacheAdapter: cache.current as unknown as NDKCacheAdapter, // yes, this is correct
                     }}
                     session={{
                         storage: sessionStorage.current,

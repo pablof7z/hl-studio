@@ -78,6 +78,21 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
                     <CardContent className="p-4">
                         <div className="flex gap-4">
                             <div className="flex-1 space-y-2">
+                                <Input
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Article title"
+                                    className="border-0 p-0 h-auto font-semibold shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 !text-lg"
+                                />
+
+                                <Textarea
+                                    value={summary}
+                                    onChange={(e) => setSummary(e.target.value)}
+                                    placeholder="Brief summary of your article"
+                                    className="border-0 p-0 h-auto min-h-0 text-sm text-muted-foreground resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                                    rows={2}
+                                />
+
                                 <div className="flex items-center gap-2">
                                     <UserAvatar pubkey={displayPubkey} size={'xs'} />
                                     <span className="text-sm font-medium">
@@ -90,46 +105,12 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
                                         className="text-xs text-muted-foreground"
                                     />
                                 </div>
-
-                                {isEditing ? (
-                                    <>
-                                        <Input
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                            placeholder="Article title"
-                                            className="border-0 p-0 h-auto font-semibold text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                        />
-                                        <Textarea
-                                            value={summary}
-                                            onChange={(e) => setSummary(e.target.value)}
-                                            placeholder="Brief summary of your article"
-                                            className="border-0 p-0 h-auto min-h-0 text-sm text-muted-foreground resize-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                            rows={2}
-                                        />
-                                        <HashtagInput
-                                            hashtags={hashtags}
-                                            onHashtagsChange={handleHashtagsChange}
-                                            placeholder="+ Add tag"
-                                        />
-                                    </>
-                                ) : (
-                                    <>
-                                        <h3 className="font-semibold text-base line-clamp-2">{title || 'Untitled'}</h3>
-                                        <p className="text-sm text-muted-foreground line-clamp-2">
-                                            {summary || 'No summary'}
-                                        </p>
-                                        <div className="flex flex-wrap gap-1 pt-1">
-                                            {hashtags.length === 0 && (
-                                                <span className="text-xs text-muted-foreground italic">No tags</span>
-                                            )}
-                                            {hashtags.map((tag) => (
-                                                <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">
-                                                    {tag}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
+                                
+                                <HashtagInput
+                                    hashtags={hashtags}
+                                    onHashtagsChange={handleHashtagsChange}
+                                    placeholder="+ Add tag"
+                                />
                             </div>
 
                             <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-md bg-muted">
@@ -142,14 +123,12 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
                                             height={80}
                                             className="object-cover w-full h-full"
                                         />
-                                        {isEditing && (
-                                            <Label
-                                                htmlFor="image-upload"
-                                                className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                                            >
-                                                <div className="text-white text-xs font-medium">Replace</div>
-                                            </Label>
-                                        )}
+                                        <Label
+                                            htmlFor="image-upload"
+                                            className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                                        >
+                                            <div className="text-white text-xs font-medium">Replace</div>
+                                        </Label>
                                     </>
                                 ) : (
                                     <Label
@@ -159,28 +138,17 @@ export function SocialPreview({ edit }: { edit?: boolean }) {
                                         <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
                                     </Label>
                                 )}
-                                {isEditing && (
-                                    <Input
-                                        id="image-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={handleImageUpload}
-                                    />
-                                )}
+                                <Input
+                                    id="image-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                <Button variant={isEditing ? "default" : "outline"} size="sm" onClick={() => setIsEditing(!isEditing)}>
-                        {isEditing ? (
-                            'Done'
-                        ) : (
-                            <>
-                                <Edit className="mr-2 h-4 w-4" /> Edit
-                            </>
-                        )}
-                    </Button>
             </div>
         </div>
     );

@@ -24,7 +24,7 @@ export function PublicationWizard() {
     // Get state and actions from the store
     const { 
         step, title, about, image, banner, category, hashtags, authors,
-        setStep, updateField, addAuthor, removeAuthor, uploadImage
+        setStep, updateField, addAuthor, uploadImage
     } = usePublicationEditorStore();
 
     useEffect(() => {
@@ -36,6 +36,9 @@ export function PublicationWizard() {
         
         if (profile && title.trim().length === 0) {
             updateField('title', `${profile.name}'s Publication`);
+            updateField('about', profile.about || '');
+            updateField('image', profile.picture || '');
+            updateField('banner', profile.banner || '');
         }
     }, [currentPubkey, profile, authors.length, title, addAuthor, updateField]);
 

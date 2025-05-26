@@ -24,9 +24,9 @@ export function TitleStep({ title, onTitleChange, onNext }: TitleStepProps) {
                 </p>
             </div>
 
-            <div className="space-y-6 max-w-xl mx-auto">
+            <div className="space-y-6 max-w-xl mx-auto border-t border-border mt-10 pt-10">
                 <div className="text-left">
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                    <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-center">
                         What should we call your publication?
                     </h2>
                     
@@ -34,7 +34,7 @@ export function TitleStep({ title, onTitleChange, onNext }: TitleStepProps) {
                         value={title}
                         onChange={(e) => onTitleChange(e.target.value)}
                         placeholder="Enter your publication title"
-                        className="!text-xl !ring-0 !outline-0 border-0 bg-transparent"
+                        className="!text-xl !ring-0 !outline-0 border-0 bg-transparent text-center"
                     />
                 </div>
 

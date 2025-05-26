@@ -76,7 +76,7 @@ export function useNostrUserSearch(query: string, limit = 10): NostrUserSearchRe
 
     // Subscribe to user metadata events
     const { events, eose } = useSubscribe(filters, { relayUrls: ['wss://relay.nostr.band'], closeOnEose: true }, [
-        filters,
+        filters, debouncedQuery
     ]);
 
     // Process events into users

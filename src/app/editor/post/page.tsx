@@ -5,7 +5,6 @@ import { ConfirmationDialog } from '@/components/posts/ConfirmationDialog';
 import { getConfirmationButtonText } from '@/components/posts/utils/getConfirmationButtonText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { usePostScheduler } from '@/domains/schedule/hooks/use-post-scheduler';
 import { SettingsModal, useEditorStore } from '@/features/long-form-editor';
 import { PostStatus } from '@/features/long-form-editor/components/PostStatus';
 import { SocialPreview } from '@/features/long-form-editor/components/SocialPreview';
@@ -83,7 +82,7 @@ export default function LongFormPostPage() {
                 <div className="mx-auto flex items-center justify-between h-14 px-4">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" asChild>
-                            <Link href="/posts">
+                            <Link href="/">
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
                         </Button>

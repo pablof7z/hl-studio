@@ -45,6 +45,8 @@ export function useThreadPosts(
         }
     };
 
+    const [publishAt, setPublishAt] = useState<Date | null>();
+
     return {
         posts,
         activePostId,
@@ -53,6 +55,8 @@ export function useThreadPosts(
         addImageToPost,
         removePost,
         setActivePostId,
-        setPosts, // Expose setter for persistence
+        setPosts,
+        publishAt,
+        setPublishAt,
     };
 }

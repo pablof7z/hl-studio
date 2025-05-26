@@ -19,9 +19,12 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const handleClose = () => {
+        onClose?.();
+    };
+
     // If the query is a nostr event id, fetch the event
     const isEventQuery = query.startsWith('note1') || query.startsWith('nevent1') || query.startsWith('naddr1');
-    const isUserQuery = query.startsWith('npub1') || query.startsWith('nprofile1');
 
     // User search (for all queries except event ids)
     const { users } = useNostrUserSearch(!isEventQuery && query.length > 1 ? query : '');
@@ -70,13 +73,9 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
         handleClose();
     };
 
-    const handleClose = () => {
-        onClose?.();
-    };
-
     return (
         <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-            <DialogContent className="sm:max-w-lg !h-[500px] overflow-auto">
+            <DialogContent className="sm:max-w-lg !h-[500px] overflow-auto !p-0">
                 <div className="flex flex-col space-y-4">
                     <Input
                         id="mention-search-input"
@@ -85,7 +84,7 @@ export const MentionModal: React.FC<MentionModalProps> = ({ open, onSelect, onCl
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="w-full !text-xl p-0 border-none !ring-0"
+                        className="w-full !text-xl pt-6 border-none !ring-0"
                         autoComplete="off"
                         data-testid="mention-search-input"
                     />

@@ -1,8 +1,8 @@
+import { schedule } from '@/features/schedules/utils/schedule';
+import { NDKDraft, NDKEvent, NDKTag, NDKUser } from '@nostr-dev-kit/ndk-hooks';
+import NDK, { NDKArticle } from '@nostr-dev-kit/ndk-hooks';
 import { StateCreator } from 'zustand';
-import NDK, { NDKArticle, NDKKind } from '@nostr-dev-kit/ndk-hooks';
-import { NDKDraft, NDKEvent, NDKTag, NDKUser } from '@nostr-dev-kit/ndk';
 import type { ZapSplit } from './zaps';
-import { schedule } from '@/domains/schedule/hooks/use-post-scheduler';
 
 export interface EventSlice {
     getEvent: (ndk: NDK, publishAt?: Date) => NDKArticle;
@@ -17,17 +17,8 @@ export interface EventSlice {
 // This type should match the combined store, but for slice typing, we use 'any' for flexibility.
 export const createEventSlice: StateCreator<any, [], [], EventSlice> = (set, get) => ({
     getEvent: (ndk: NDK) => {
-        const {
-            content,
-            title,
-            summary,
-            tags,
-            author,
-            image,
-            zapSplits,
-            publishAt,
-        } = get();
-        
+        const { content, title, summary, tags, author, image, zapSplits, publishAt } = get();
+
         // Use the provided publishAt parameter, or fall back to the store's publishAt
         const effectivePublishAt = publishAt;
         const publishTimestamp = effectivePublishAt ? Math.floor(effectivePublishAt.getTime() / 1000) : undefined;
@@ -88,13 +79,13 @@ export const createEventSlice: StateCreator<any, [], [], EventSlice> = (set, get
     post: async (ndk: NDK): Promise<NDKEvent[]> => {
         const { author, publishAt, getEvents, saveDraft } = get();
         const currentUser = ndk.activeUser;
-        
+
         const events = getEvents(ndk);
 
         if (author && author?.pubkey != currentUser?.pubkey) {
-            console.debug("[EventSlice] Creating proposal event");
+            console.debug('[EventSlice] Creating proposal event');
             saveDraft(true, true);
-        } else if (publishAt && publishAt > (Date.now()/1000)) {
+        } else if (publishAt && publishAt > Date.now() / 1000) {
             // this is a scheduled post
             for (const event of events) {
                 await event.sign();
@@ -108,5 +99,5 @@ export const createEventSlice: StateCreator<any, [], [], EventSlice> = (set, get
         }
 
         return events;
-    }
+    },
 });

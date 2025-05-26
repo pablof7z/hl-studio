@@ -58,7 +58,7 @@ export const createPublicationSlice: StateCreator<PublicationSlice> = (set, get)
     uploadImage: async (field, file, ndk) => {
         if (!ndk || !file) return;
 
-        const blossom = new NDKBlossom(ndk as any);
+        const blossom = new NDKBlossom(ndk);
         
         // Show preview immediately
         const reader = new FileReader();
@@ -70,7 +70,6 @@ export const createPublicationSlice: StateCreator<PublicationSlice> = (set, get)
         try {
             const imeta = await blossom.upload(file, { maxRetries: 3, server: 'https://nostr.download' });
             if (imeta?.url) {
-                if (field === '')
                 set({ [field]: imeta.url });
             }
         } catch (error) {

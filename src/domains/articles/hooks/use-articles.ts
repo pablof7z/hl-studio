@@ -1,4 +1,3 @@
-import { useAPI } from '@/domains/api/hooks/useAPI';
 import { NDKArticle, NDKDraft, NDKEvent, NDKKind } from '@nostr-dev-kit/ndk-hooks';
 import { useArticlesStore } from '../stores/articlesStore';
 import { useDraftStore } from '@/features/drafts/stores';
@@ -28,9 +27,6 @@ export function useArticles({ includeDeleted } = { includeDeleted: false }): Art
     const drafts = useDraftStore((state) => state.items);
     const scheduledPosts = useScheduleStore((state) => state.schedules);
 
-    console.log('[useArticles] published', published.length);
-    console.log('[useArticles] scheduledPosts', scheduledPosts.length);
-
     const scheduledArticles = useMemo(() => {
         return scheduledPosts
             .filter((post) => post.innerEvent.kind === NDKKind.Article)
@@ -51,7 +47,7 @@ export function useArticles({ includeDeleted } = { includeDeleted: false }): Art
             .map((draftPost) => {
                 const dTag = draftPost.innerEvent.dTag ?? draftPost.draft.dTag;
                 if (!dTag) {
-                    throw new Error('Draft does not have a dTag' + draftPost.draft.inspect);
+                    return null; // Skip drafts without a dTag
                 }
                 return {
                     article: NDKArticle.from(draftPost.innerEvent),
@@ -62,10 +58,8 @@ export function useArticles({ includeDeleted } = { includeDeleted: false }): Art
                     dTag
                 };
             })
-            .filter(Boolean)
+            .filter(d => !!d);
     }, [drafts]);
-
-    console.log('[useArticles] draftArticles', draftArticles.length);
 
     return useMemo(() => {
         const items: Record<string, ArticleEntry> = {};
@@ -119,35 +113,4 @@ export function useArticles({ includeDeleted } = { includeDeleted: false }): Art
 
         return Object.values(items);
     }, [published, draftArticles, scheduledArticles]);
-
-
-    return [];
-
-    
-
-    // // Published articles
-    // const publishedArticles: ArticleWithStatus[] = [];
-    // for (const article of published) {
-    //     const deleted = article.hasTag('deleted');
-    //     if (includeDeleted && deleted) {
-    //         publishedArticles.push({ article, event: article, created_at: article.created_at, status: 'archived' });
-    //     } else if (!deleted) {
-    //         publishedArticles.push({ article, event: article, created_at: article.created_at, status: 'published' });
-    //     }
-    // }
-
-    // // Scheduled articles from API
-    // // const scheduledArticles = Array.isArray(scheduledPosts)
-    // //     ? scheduledPosts.map((post) => {
-    // //           console.log('scheduled post', post?.event?.inspect);
-    // //           return { article: post.event, status: 'scheduled' };
-    // //       })
-    // //     : [];
-
-    // // Merge and sort all articles by created_at descending
-    // return [...publishedArticles, ...draftArticles].sort((a, b) => {
-    //     const aDate = a.created_at || a.scheduledAt || 0;
-    //     const bDate = b.created_at || b.scheduledAt || 0;
-    //     return bDate - aDate;
-    // });
 }

@@ -1,6 +1,5 @@
-import { StateCreator } from 'zustand';
-import NDK from '@nostr-dev-kit/ndk';
-import { NDKDraft, NDKUser } from '@nostr-dev-kit/ndk';
+import NDK, { NDKDraft, NDKUser } from '@nostr-dev-kit/ndk-hooks';
+import type { StateCreator } from 'zustand';
 
 export interface DraftSlice {
     ndk: NDK | null;

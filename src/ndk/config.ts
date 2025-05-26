@@ -11,6 +11,10 @@
  */
 export const DEFAULT_RELAYS = [
     'ws://localhost:10547',
+    'wss://relay.primal.net',
+    'wss://purplepag.es',
+    'wss://relay.nostr.band',
+    'wss://relay.damus.io',
 ];
 
 /**

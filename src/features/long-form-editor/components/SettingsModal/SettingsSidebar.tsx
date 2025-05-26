@@ -1,6 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { CardStackIcon } from '@radix-ui/react-icons';
+import { Bitcoin, User2 } from 'lucide-react';
 
 export interface SettingsSidebarProps {
     activeSettingsTab: 'metadata' | 'monetization' | 'proposal';
@@ -18,13 +20,15 @@ export function SettingsSidebar({ activeSettingsTab, setActiveSettingsTab }: Set
                         className="w-full justify-start px-4"
                         onClick={() => setActiveSettingsTab('metadata')}
                     >
-                        Metadata
+                        <CardStackIcon />
+                        Social Preview
                     </Button>
                     <Button
                         variant={activeSettingsTab === 'monetization' ? 'secondary' : 'ghost'}
                         className="w-full justify-start px-4"
                         onClick={() => setActiveSettingsTab('monetization')}
                     >
+                        <Bitcoin />
                         Monetization
                     </Button>
                     <Button
@@ -32,6 +36,7 @@ export function SettingsSidebar({ activeSettingsTab, setActiveSettingsTab }: Set
                         className="w-full justify-start px-4"
                         onClick={() => setActiveSettingsTab('proposal')}
                     >
+                        <User2 />
                         Proposal
                     </Button>
                 </div>

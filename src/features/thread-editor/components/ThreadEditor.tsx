@@ -22,6 +22,8 @@ export function ThreadEditor() {
         removePost,
         setActivePostId,
         setPosts,
+        publishAt,
+        setPublishAt,
     } = useThreadPosts();
 
     // Persistence hook
@@ -37,13 +39,10 @@ export function ThreadEditor() {
         if (hasDraft) {
             restoreDraft();
         }
-        // Only run on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
     const handlePublishOrSchedule = () => {
-        // Intentionally left empty
     };
 
     return (
@@ -53,8 +52,9 @@ export function ThreadEditor() {
             <ConfirmationDialog
                 open={isConfirmDialogOpen}
                 onOpenChange={setIsConfirmDialogOpen}
-                onPublish={handlePublishOrSchedule}
-                onSchedule={handlePublishOrSchedule}
+                onSubmit={handlePublishOrSchedule}
+                publishAt={publishAt}
+                setPublishAt={setPublishAt}
             >
                 {/* <SocialPreview /> */}
             </ConfirmationDialog>
@@ -63,7 +63,7 @@ export function ThreadEditor() {
                 <div className="flex items-center justify-between border-b p-4">
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" asChild>
-                            <Link href="/posts">
+                            <Link href="/">
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
                         </Button>

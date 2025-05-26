@@ -73,9 +73,6 @@ export function NostrEditor({ event, children, onChange, placeholder = 'Start wr
                             onStart: () => {
                                 setMentionModalOpen(true);
                             },
-                            onUpdate: () => {
-                                // Nothing to do here, the modal handles its own updates
-                            },
                             onKeyDown: () => {
                                 // Let the modal handle keyboard navigation
                                 return false;
@@ -156,6 +153,7 @@ export function NostrEditor({ event, children, onChange, placeholder = 'Start wr
             editor
                 .chain()
                 .focus()
+                .deleteRange({ from: editor.state.selection.from - 1, to: editor.state.selection.from })
                 .insertNProfile({
                     bech32: user.npub,
                 })
@@ -166,6 +164,7 @@ export function NostrEditor({ event, children, onChange, placeholder = 'Start wr
                 editor
                     .chain()
                     .focus()
+                    .deleteRange({ from: editor.state.selection.from - 1, to: editor.state.selection.from })
                     .insertNEvent({
                         bech32: selectedMentionEntity.identifier || '',
                     })
@@ -174,6 +173,7 @@ export function NostrEditor({ event, children, onChange, placeholder = 'Start wr
                 editor
                     .chain()
                     .focus()
+                    .deleteRange({ from: editor.state.selection.from - 1, to: editor.state.selection.from })
                     .insertNAddr({
                         bech32: selectedMentionEntity.identifier || '',
                     })

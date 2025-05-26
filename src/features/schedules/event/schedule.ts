@@ -1,4 +1,5 @@
 import NDK, { NDKEvent, NDKKind, NDKSigner, NDKUser, wrapEvent } from "@nostr-dev-kit/ndk";
+import { ChartNoAxesColumnDecreasing } from "lucide-react";
 
 export class NDKSchedule extends NDKEvent {
     public _event?: NDKEvent;
@@ -24,13 +25,12 @@ export class NDKSchedule extends NDKEvent {
         if (!_signer) throw new Error("No signer available");
 
         const pTag = this.tagValue("p");
-        if (!pTag) throw new Error("No p-tag found");
+        if (!pTag) return null;
         const cp = new NDKUser({ pubkey: pTag });
 
         try {
             await this.decrypt(cp, _signer);
             const payload = JSON.parse(this.content);
-            console.log("Payload", payload);
 
             // if it's an array, it's the legacy format
             if (Array.isArray(payload)) {
@@ -44,7 +44,7 @@ export class NDKSchedule extends NDKEvent {
             }
             return this._event;
         } catch (e) {
-            throw new Error("Failed to decrypt event: " + e);
+            console.log("Failed to decrypt event: " + e);
         }
     }
 

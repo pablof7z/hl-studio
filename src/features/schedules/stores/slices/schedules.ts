@@ -1,4 +1,4 @@
-import NDK, { NDKArticle, NDKEvent, NDKEventId, NDKKind, NDKSubscription, wrapEvent } from '@nostr-dev-kit/ndk';
+import NDK, { NDKArticle, NDKEvent, NDKEventId, NDKKind, NDKSubscription, wrapEvent } from '@nostr-dev-kit/ndk-hooks';
 import { StateCreator } from 'zustand';
 import { NDKSchedule } from '../../event/schedule';
 
@@ -38,8 +38,6 @@ export const createScheduleSlice: StateCreator<ScheduleSlice, [], [], ScheduleSl
         ], { wrap: true }, {
             onEvent: (event) => {
                 const deletedIds = new Set(get().deletedIds);
-                
-                console.log('schedule event', event.kind, event.hasTag("deleted"));
                 
                 if (event.kind === NDKKind.EventDeletion) {
                     let schedules = [...get().schedules];
@@ -87,7 +85,6 @@ export const createScheduleSlice: StateCreator<ScheduleSlice, [], [], ScheduleSl
                             if (a.schedule.created_at === b.schedule.created_at) return 0;
                             return b.schedule.created_at < a.schedule.created_at ? -1 : 1;
                         });
-                        console.log('schedule event', event.inspect, { scheduleId: schedule.id }, schedules);
                         set({ schedules });
                     }
                 });

@@ -19,6 +19,7 @@ import { NDKPublication } from '@/features/publication/event/publication';
 import { cn } from '@/lib/utils';
 import { useNDK, useNDKCurrentPubkey, useProfileValue, useSubscribe } from '@nostr-dev-kit/ndk-hooks';
 import { CaretSortIcon, CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons';
+import Link from 'next/link';
 import * as React from 'react';
 import { useEffect, useMemo } from 'react';
 
@@ -187,8 +188,14 @@ export function AccountSwitcher({ className }: AccountSwitcherProps) {
                                         // setOpen(false);
                                     }}
                                 >
-                                    <PlusCircledIcon className="mr-2 h-5 w-5" />
-                                    Create Publication
+                                    <Link
+                                        href="/publications/new"
+                                        className="flex items-center gap-2 w-full"
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        <PlusCircledIcon className="mr-2 h-5 w-5" />
+                                        Create Publication
+                                    </Link>
                                 </CommandItem>
                             </CommandGroup>
                         </CommandList>
